@@ -1,0 +1,28 @@
+<div id="base-container">
+    <form id="access-form" onsubmit="return false;">
+        <div class="notice error hidden">
+        </div>
+        
+        <div class="form-field">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" class="form-input" required />
+        </div>
+        
+        <div class="form-field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" class="form-input" required />
+        </div>
+        
+        <div class="form-field">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" class="form-input" required />
+        </div>
+        
+        <input type="hidden" id="csrf_token" name="csrf_token" value="{{{csrf_token}}}" />
+        
+        <div class="form-buttons">
+            <input type="submit" name="submit" value="Login" />
+            <input type="button" name="register" value="Signup" />
+        </div>
+    </form>
+</div>
