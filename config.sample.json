@@ -1,0 +1,5 @@
+{
+    "ConnectionString" : "localhost:28015",
+    "SecretKey" : "Here be dragons",
+    "Port" : ":3000"
+}

@@ -2,9 +2,12 @@ package main
 
 import (
 	"github.com/codegangsta/martini"
-	"github.com/gorilla/sessions"
+	s "github.com/gorilla/sessions"
     "./magnet"
+    "github.com/justinas/nosurf"
     r "github.com/christopherhesse/rethinkgo"
+    "encoding/json"
+    "net/http"
     "fmt"
     "os"
 )
@@ -18,53 +21,41 @@ func initDatabase(connectionString string) *r.Session {
         return nil
     }
     
-    err = r.DbCreate("magnet").Run(session).Exec()
-    if err != nil {
-        fmt.Println(err)
-    }
-    
-    err = r.TableCreate("users").Run(session).Exec()
-    if err != nil {
-        fmt.Println(err)
-    }
-    
-    err = r.TableCreate("bookmarks").Run(session).Exec()
-    if err != nil {
-        fmt.Println(err)
-    }
-    
-    err = r.TableCreate("sessions").Run(session).Exec()
-    if err != nil {
-        fmt.Println(err)
-    }
-    
-    err = r.TableCreate("tags").Run(session).Exec()
-    if err != nil {
-        fmt.Println(err)
-    }
+    r.DbCreate("magnet").Run(session).Exec()
+    r.TableCreate("users").Run(session).Exec()
+    r.TableCreate("bookmarks").Run(session).Exec()
+    r.TableCreate("sessions").Run(session).Exec()
+    r.TableCreate("tags").Run(session).Exec()
     
     return session
 }
 
 func main() {
     // TODO
-    // - Database init and map
     // - Config init and map
     
 	m := martini.Classic()
     
+    // Read config
+    reader, _ := os.Open("config.json")
+    decoder := json.NewDecoder(reader)
+    config := &magnet.Config{}
+    decoder.Decode(&config)
+    
     // Init database
-    dbSession := initDatabase("localhost:28015")
+    dbSession := initDatabase(config.ConnectionString)
     if dbSession == nil {
         os.Exit(2)
     }
     
     // Create a new cookie store
-    store := sessions.NewCookieStore([]byte("my fancy secret code"))
+    store := s.NewCookieStore([]byte(config.SecretKey))
     // It will be available to all handlers as *sessions.CookieStore
     m.Map(store)
     // It will be available to all handlers as *r.Session
     m.Map(dbSession)
+    // It will be available to all handlers as *magnet.Config
+    m.Map(config)
     // public folder will serve the static content
 	m.Use(martini.Static("public"))
 
@@ -84,12 +75,14 @@ func main() {
     //m.Post("/search", magnet.ResponseAuthentication, magnet.SearchHandler)
     
     // User-related routes
-    m.Post("/login", magnet.LoginHandler)
+    m.Post("/login", magnet.LoginPostHandler)
     m.Post("/logout", magnet.LogoutHandler)
     m.Post("/signup", magnet.SignUpHandler)
 
     // Home
 	m.Get("/", magnet.Authentication, magnet.IndexHandler)
+    csrfHandler := nosurf.New(m)
+    csrfHandler.SetFailureHandler(http.HandlerFunc(magnet.CsrfFailHandler))
 
-	m.Run()
+	http.ListenAndServe(config.Port, csrfHandler)
 }
