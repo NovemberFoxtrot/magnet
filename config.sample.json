@@ -1,5 +1,6 @@
 {
     "ConnectionString" : "localhost:28015",
     "SecretKey" : "Here be dragons",
-    "Port" : ":3000"
+    "Port" : ":3000",
+    "SessionExpires" : 1296000
 }

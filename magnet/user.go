@@ -8,7 +8,7 @@ import (
     "github.com/justinas/nosurf"
     "crypto/sha1"
     "encoding/base64"
-    "fmt"
+    "time"
 )
 
 type User struct {
@@ -18,8 +18,8 @@ type User struct {
 }
 
 type Session struct {
-    UserId    string
-    Expires    int32
+    UserId    string `json:userid`
+    Expires    int64 `json:expires`
 }
 
 func cryptPassword(password, salt string) string {
@@ -36,39 +36,57 @@ func LoginHandler(r *h.Request, w h.ResponseWriter, cs *s.CookieStore) {
     w.Write([]byte(m.RenderFileInLayout("templates/login.mustache", "templates/base.mustache", context)))
 }
 
-func LoginPostHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, cfg *Config) string {
-    username := r.PostFormValue("username")
+func LoginPostHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, cfg *Config, dbSession *r.Session) {
+    username := req.PostFormValue("username")
     password := cryptPassword(req.PostFormValue("password"), cfg.SecretKey)
     var response []interface{}
     err := r.Db("magnet").
             Table("users").
             Filter(r.Row.Attr("Username").
-                Eq(user.Username).
+                Eq(username).
                 And(r.Row.Attr("Password").
-                    Eq(user.Password))).
+                    Eq(password))).
             Run(dbSession).
             All(&response)
             
-    if err != nil || len(response) != 0 {
-        // Login failed
+    if err != nil || len(response) == 0 {
+        WriteJsonResponse(200, true, "Invalid username or password.", req, w)
     } else {
-        // Login correct
         // Store session
+        userId := response[0].(map[string]interface{})["id"].(string)
+        session := Session{UserId: userId,
+                    Expires: time.Now().Unix() + int64(cfg.SessionExpires)}
+
+        var response r.WriteResponse
+        err = r.Db("magnet").
+                Table("sessions").
+                Insert(session).
+                Run(dbSession).
+                One(&response)
+
+        if err != nil || response.Inserted < 1 {
+            WriteJsonResponse(200, true, "Error creating the user session.", req, w)
+        } else {
+            session, _ := cs.Get(req, "magnet_session")
+            session.Values["session_id"] = response.GeneratedKeys[0]
+            session.Save(req, w)
+            WriteJsonResponse(200, false, "User correctly logged in.", req, w)
+        }
     }
 }
 
-// Not implemented
+// Not implemented yet
 func LogoutHandler() {
 }
 
-func SignUpHandler(req *h.Request, dbSession *r.Session, cs *s.CookieStore, cfg *Config) {
+func SignUpHandler(req *h.Request, w h.ResponseWriter, dbSession *r.Session, cs *s.CookieStore, cfg *Config) {
     user := new(User)
     user.Username = req.PostFormValue("username")
     user.Email = req.PostFormValue("email")
     user.Password = cryptPassword(req.PostFormValue("password"), cfg.SecretKey)
     
     if len(user.Username) == 0 || len(user.Email) == 0 {
-        // Throw error
+        WriteJsonResponse(200, true, "Empty fields.", req, w)
     }
     
     var response []interface{}
@@ -80,8 +98,9 @@ func SignUpHandler(req *h.Request, dbSession *r.Session, cs *s.CookieStore, cfg 
                     Eq(user.Email))).
             Run(dbSession).
             All(&response)
+
     if err != nil || len(response) != 0 {
-        // Username or email taken
+        WriteJsonResponse(200, true, "Username or email taken.", req, w)
     } else {
         // Can insert
         var response r.WriteResponse
@@ -92,9 +111,9 @@ func SignUpHandler(req *h.Request, dbSession *r.Session, cs *s.CookieStore, cfg 
                 One(&response)
                 
         if err != nil {
-            // Error happened
+            WriteJsonResponse(200, true, "There was an error creating the user.", req, w)
+        } else {
+            WriteJsonResponse(201, false, "New user created.", req, w)
         }
     }
-    
-    // TODO: Response
 }
