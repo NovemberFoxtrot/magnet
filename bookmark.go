@@ -44,7 +44,7 @@ func GetBookmarks(page int64, dbSession *r.Session, userId string) []Bookmark {
 			}
 		}
 	}
-    
+
 	return bookmarks
 }
 
@@ -72,9 +72,9 @@ func NewBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, d
 	bookmark := new(Bookmark)
 	bookmark.Title = req.PostFormValue("title")
 	bookmark.Tags = strings.Split(req.PostFormValue("tags"), ",")
-    for i, v := range bookmark.Tags {
-        bookmark.Tags[i] = strings.TrimSpace(v)
-    }
+	for i, v := range bookmark.Tags {
+		bookmark.Tags[i] = strings.ToLower(strings.TrimSpace(v))
+	}
 	bookmark.Created = float64(time.Now().Unix())
 	// TODO update tag count
 	bookmark.Url = req.PostFormValue("url")

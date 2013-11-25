@@ -55,9 +55,11 @@ function submitAccessForm(form) {
                 refresh();
             }
         } : function(response) {
-                window.setTimeout(function() {
-                    window.location.href = window.location.href;
-                }, 3000);
+            if (response.error) {
+                showAlert(response.message, 'error');
+            } else {
+                showAlert('You have been successfully signed up!', 'success');
+                refresh();
             }
         },
         token
@@ -126,7 +128,7 @@ function renderBookmark(title, url, tags, date) {
     } else {
         tagArray = tags.split(',');
         for (i in tagArray) {
-            bookmarkHtml += '<span class="bookmark-tag">' + tagArray[i].trim() + '</span>';
+            bookmarkHtml += '<span class="bookmark-tag">' + tagArray[i].trim().toLowerCase() + '</span>';
         }
     }
     bookmarkHtml += '</div></article>';
