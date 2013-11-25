@@ -1,0 +1,62 @@
+<div id="left-side">
+	<div id="add-bookmark">
+		<form id="bookmark-add" onsubmit="submitNewBookmark(this); return false;">
+			<div class="form-field">
+				<span class="ion-link form-icon"></span><input type="text" name="url" id="url" placeholder="http://www.example.com" onclick="toggleBookmarkForm(true);" />
+			</div>
+			<div class="form-field hidden">
+				<span class="ion-bookmark form-icon"></span><input type="text" name="title" id="title" placeholder="Title..." />
+			</div>
+			<div class="form-field hidden">
+				<span class="ion-ios7-pricetag form-icon"></span><input type="text" name="tags" id="bk-tags" placeholder="Tags (separated by commas)" />
+			</div>
+			<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+			<div class="form-buttons">
+				<input type="submit" name="submit" id="submit-add-bookmark" value="Add bookmark" />
+			</div>
+		</form>
+	</div>
+	<section id="list-bookmarks">
+		{{#bookmarks}}
+		<article>
+			<h3><a href="{{Url}}">{{Title}}</a></h3>
+			<div class="bookmark-url"><span class="ion-link bookmark-icon"></span> {{Url}}</div> <div class="bookmark-date"><span class="ion-clock bookmark-icon"></span> {{Date}}</div>
+            <div class="bookmark-tags">
+                <span class="ion-ios7-pricetag bookmark-icon"></span>
+                {{#Tags}}
+                <span class="bookmark-tag">{{.}}</span>
+                {{/Tags}}
+            </div>  
+		</article>
+		{{/bookmarks}}
+		{{^bookmarks}}
+		<article class="empty">
+			<h3><span class="ion-ios7-glasses-outline"></span></h3>
+			<p>There aren't any bookmarks yet.</p>
+		</article>
+		{{/bookmarks}}
+	</section>
+</div>
+<aside>
+	<div id="aside-head"><h1><span class="ion-magnet"></span></h1></div>
+
+	<form id="search-form" onsubmit="submitSearchForm(); return false;">
+		<input type="text" name="search-query" id="search-query" placeholder="Search..." />
+	</form>
+
+	<div id="tags">
+		<h3>Tags</h3>
+
+		<ul>
+		{{#tags}}
+		{{/tags}}
+		{{^tags}}
+		<li>No tags</li>
+		{{/tags}}
+		</li>
+
+		<button id="add-tag">Add tag</button>
+	</div>
+</aside>
+
+<footer></footer>

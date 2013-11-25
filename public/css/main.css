@@ -1,0 +1,619 @@
+/* ==========================================================================
+   HTML5 Boilerplate styles - h5bp.com (generated via initializr.com)
+   ========================================================================== */
+
+html,
+button,
+input,
+select,
+textarea {
+    color: #222;
+}
+
+body {
+    font-size: 1em;
+    line-height: 1.4;
+}
+
+::-moz-selection {
+    background: rgb(231,76,60);
+    color: #FFF;
+    text-shadow: none;
+}
+
+::selection {
+    background: rgb(231,76,60);
+    color: #FFF;
+    text-shadow: none;
+}
+
+hr {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid #ccc;
+    margin: 1em 0;
+    padding: 0;
+}
+
+img {
+    vertical-align: middle;
+}
+
+fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+textarea {
+    resize: vertical;
+}
+
+.chromeframe {
+    margin: 0.2em 0;
+    background: #ccc;
+    color: #000;
+    padding: 0.2em 0;
+}
+
+
+/* ==========================================================================
+   Author's custom styles
+   ========================================================================== */
+
+* {
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    outline: none;
+}
+
+body, html {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    background: rgb(11, 121, 229);
+    font-family: 'Lato', sans-serif;
+    font-weight: 400;
+    color: #FFF;
+    text-shadow: 0px -1px 0px rgb(17,83,148);
+}
+
+#base-container header h1, #aside-head h1 {
+    font-size: 6.0em;
+    text-align: center;
+    color: #FFF;
+    width: auto;
+    margin: 0 auto;
+    padding: 0;
+    margin-top: 100px;
+    text-shadow: 0px -2px 0px rgb(17,83,148);
+}
+
+#aside-head h1 {
+    font-size: 4.5em;
+    margin-top: 15px;
+}
+
+#base-container h2 {
+    font-weight: 700;
+    font-size: 2.5em;
+    font-family: 'Montserrat', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    text-shadow: 0px -2px 0px rgb(17,83,148);
+}
+
+#access-form {
+    width: 90%;
+    margin: 20px auto;
+    max-width: 450px;
+}
+
+.form-field {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: none;
+    padding: 0;
+    width: 100%;
+}
+
+.form-fields div.form-field:first-child {
+    -webkit-border-top-left-radius: 5px;
+    -webkit-border-top-right-radius: 5px;
+    -moz-border-radius-topleft: 5px;
+    -moz-border-radius-topright: 5px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.form-fields div.form-field:last-child {
+    -webkit-border-bottom-right-radius: 5px;
+    -webkit-border-bottom-left-radius: 5px;
+    -moz-border-radius-bottomright: 5px;
+    -moz-border-radius-bottomleft: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#access-form .form-field label {
+    display: inline-block;
+    width: 30%;
+    padding: 15px 0;
+    padding-left: 20px;
+    font-weight: 700;
+    margin: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#access-form .form-field input {
+    display: inline-block;
+    width: 65%;
+    border: none;
+    padding: 10px 15px;
+    color: #FFF;
+    margin: 0;
+    background: transparent;
+}
+
+#access-form .form-buttons {
+    padding-top: 20px;
+    text-align: center;
+}
+
+#access-form .form-buttons input[type="submit"] {
+    display: inline-block;
+    width: 48%;
+    margin-right: 1%;
+    padding: 15px 0;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    text-shadow: none;
+    color: rgb(17,83,148);
+    border-radius: 4px;
+    font-weight: 700;
+    -webkit-transition: all 200ms ease-in;
+    transition: all 200ms ease-in;
+}
+
+#access-form .form-buttons input[type="submit"]:hover {
+    background: #FFF;
+    border-color: #FFF;
+}
+
+#access-form .form-buttons input[type="button"] {
+    display: inline-block;
+    width: 48%;
+    margin-left: 1%;
+    padding: 15px 0;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-weight: 700;
+    color: #FFF;
+    background: transparent;
+    border-radius: 4px;
+    -webkit-transition: all 200ms ease-in;
+    transition: all 200ms ease-in;
+}
+
+#access-form .form-buttons input[type="button"]:hover {
+    border-color: #FFF;
+}
+
+#alert {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 9999;
+    padding: 25px;
+    text-align: center;
+    text-shadow: none;
+    font-weight: 700;
+    background: #FFF;
+    color: rgb(17,83,148);
+    -webkit-transition: all 500ms ease-in;
+    transition: all 500ms ease-in;
+}
+
+.success {
+    background: rgb(35,179,69) !important;
+    color: #FFF !important;
+}
+
+.error {
+    background: rgb(207,41,9) !important;
+    color: #FFF !important;
+}
+
+#left-side {
+    float: left;
+    background: #FFF;
+    min-height: 100%;
+    width: 70%;
+    color: #444;
+    text-shadow: none;
+}
+
+aside {
+    float: right;
+    height: 100%;
+    width: 30%;
+}
+
+#search-form {
+    padding: 20px;
+}
+
+#search-form input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    background: transparent;
+    color:    #FFF;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    -webkit-transition: all 200ms ease-in;
+    transition: all 200ms ease-in;
+}
+
+#search-form input:focus {
+    border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+#search-form input::-webkit-input-placeholder {
+    color:    #eee;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+}
+
+#search-form input:-moz-placeholder {
+    color:    #eee;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+}
+
+#search-form input::-moz-placeholder {
+    color:    #eee;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+}
+#search-form input:-ms-input-placeholder {
+    color:    #eee;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+}
+
+#tags {
+    padding: 20px;
+}
+
+#tags h3 {
+    font-weight: 700;
+    font-size: 1.5em;
+    font-family: 'Montserrat', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    text-shadow: 0px -2px 0px rgb(17,83,148);
+}
+
+article.empty h3 {
+    font-size: 4.5em;
+    text-align: center;
+    padding: 0;
+    padding-top: 20px;
+    margin: 0;
+}
+
+article.empty p {
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    font-size: 1.4em;
+}
+
+#add-bookmark {
+    padding: 30px 70px;
+    border-bottom: 1px solid #EEE;
+}
+
+.form-icon {
+    display: inline-block;
+    font-size: 2.0em !important;
+    vertical-align: middle;
+    width: 40px;
+    text-align: center;
+}
+
+#bookmark-add div.form-field input {
+    display: inline-block;
+    width: calc(100% - 60px);
+    margin-left: 20px;
+    border: none;
+    border-bottom: 2px solid #DDD;
+    padding: 15px;
+    font-family: 'Lato', sans-serif;
+    -webkit-transition: all 200ms ease-in;
+    transition: all 200ms ease-in;
+}
+
+#bookmark-add .form-buttons {
+    padding-top: 15px;
+    text-align: center;
+}
+
+#bookmark-add .form-buttons input {
+    background: #DDD;
+    width: 50%;
+    margin: 0 auto;
+    padding: 15px;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    border: none;
+    border-radius: 5px;
+    color: #666;
+    -webkit-transition: all 200ms ease-in;
+    transition: all 200ms ease-in;
+}
+
+#bookmark-add .form-buttons input:hover {
+    background: rgb(11, 121, 229);
+    color: #FFF;
+}
+
+/* BOOKMARKS */
+
+#list-bookmarks article {
+    padding: 15px 70px;
+    border-bottom: 1px solid #EEE;
+}
+
+#list-bookmarks article h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 1.8em;
+    padding: 0;
+    margin: 0;
+    margin-bottom: 10px;
+}
+
+#list-bookmarks article a {
+    text-decoration: none;
+    color: #444;
+    border-bottom: 1px solid #CCC;
+    -webkit-transition: all 200ms ease-in;
+    transition: all 200ms ease-in;
+}
+
+#list-bookmarks article a:hover {
+    color: rgb(11, 121, 229);
+    border-bottom-color: rgb(31, 141, 249);
+}
+
+.bookmark-icon {
+    font-size: 1.6em;
+    vertical-align: middle;
+    color: #BBB;
+    margin-right: 10px;
+}
+
+.bookmark-url {
+    display: inline-block;
+    padding-right: 15px;
+    color: #666;
+}
+
+.bookmark-date {
+    display: inline-block;
+    color: #777;
+}
+
+.bookmark-tags {
+    padding-top: 10px;
+    color: #AAA;
+    -webkit-transition: all 200ms ease-in;
+    transition: all 200ms ease-in;
+}
+
+.bookmark-tags:hover {
+    color: #555;
+}
+
+.bookmark-tag {
+    font-size: 0.9em;
+    text-transform: uppercase;
+    font-weight: 700;
+    vertical-align: middle;
+}
+
+span.bookmark-tag + span.bookmark-tag::before {
+    content: ", ";
+}
+
+/* END BOOKMARKS */
+
+/* ==========================================================================
+   Media Queries
+   ========================================================================== */
+
+@media only screen and (max-width: 600px) {
+    nav ul li.separator {
+        color: #FFF;
+        font-size: 0px;
+        border-bottom: 1px solid #eee;
+        margin: 15px 0;
+    }
+
+    #intro-container {
+        padding: 20px;
+    }
+
+    #intro-container h1 {
+        display: block;
+        font-size: 4.0em;
+    }
+
+    #intro-container h2 {
+        display: block;
+        font-size: 2.0em;
+        padding: 0;
+        margin: 0;
+        margin-top: 20px;
+    }
+
+    nav ul li {
+        display: block;
+    }
+
+    nav ul li a {
+        font-size: 1.5em;
+    }
+
+}
+
+@media print,
+       (-o-min-device-pixel-ratio: 5/4),
+       (-webkit-min-device-pixel-ratio: 1.25),
+       (min-resolution: 120dpi) {
+
+}
+
+/* ==========================================================================
+   Helper classes
+   ========================================================================== */
+
+.ir {
+    background-color: transparent;
+    border: 0;
+    overflow: hidden;
+    *text-indent: -9999px;
+}
+
+.ir:before {
+    content: "";
+    display: block;
+    width: 0;
+    height: 150%;
+}
+
+.hidden {
+    display: none !important;
+    visibility: hidden;
+}
+
+.visuallyhidden {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+}
+
+.visuallyhidden.focusable:active,
+.visuallyhidden.focusable:focus {
+    clip: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    position: static;
+    width: auto;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.clearfix:before,
+.clearfix:after {
+    content: " ";
+    display: table;
+}
+
+.clearfix:after {
+    clear: both;
+}
+
+.clearfix {
+    *zoom: 1;
+}
+
+/* ==========================================================================
+   Print styles
+   ========================================================================== */
+
+@media print {
+    * {
+        background: transparent !important;
+        color: #000 !important; /* Black prints faster: h5bp.com/s */
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    a,
+    a:visited {
+        text-decoration: underline;
+    }
+
+    a[href]:after {
+        content: " (" attr(href) ")";
+    }
+
+    abbr[title]:after {
+        content: " (" attr(title) ")";
+    }
+
+    /*
+     * Don't show links for images, or javascript/internal links
+     */
+
+    .ir a:after,
+    a[href^="javascript:"]:after,
+    a[href^="#"]:after {
+        content: "";
+    }
+
+    pre,
+    blockquote {
+        border: 1px solid #999;
+        page-break-inside: avoid;
+    }
+
+    thead {
+        display: table-header-group; /* h5bp.com/t */
+    }
+
+    tr,
+    img {
+        page-break-inside: avoid;
+    }
+
+    img {
+        max-width: 100% !important;
+    }
+
+    @page {
+        margin: 0.5cm;
+    }
+
+    p,
+    h2,
+    h3 {
+        orphans: 3;
+        widows: 3;
+    }
+
+    h2,
+    h3 {
+        page-break-after: avoid;
+    }
+}
