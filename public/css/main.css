@@ -64,6 +64,234 @@ textarea {
 
 * {
     box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    outline: none;
+}
+
+body, html {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    background: rgb(11, 121, 229);
+    font-family: 'Lato', sans-serif;
+    font-weight: 400;
+    color: #FFF;
+    text-shadow: 0px -1px 0px rgb(17,83,148);
+}
+
+#base-container header h1, #aside-head h1 {
+    font-size: 6.0em;
+    text-align: center;
+    color: #FFF;
+    width: auto;
+    margin: 0 auto;
+    padding: 0;
+    margin-top: 100px;
+    text-shadow: 0px -2px 0px rgb(17,83,148);
+}
+
+#aside-head h1 {
+    font-size: 4.5em;
+    margin-top: 15px;
+}
+
+#base-container h2 {
+    font-weight: 700;
+    font-size: 2.5em;
+    font-family: 'Montserrat', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    text-shadow: 0px -2px 0px rgb(17,83,148);
+}
+
+#access-form {
+    width: 90%;
+    margin: 20px auto;
+    max-width: 450px;
+}
+
+.form-field {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: none;
+    padding: 0;
+    width: 100%;
+}
+
+.form-fields div.form-field:first-child {
+    -webkit-border-top-left-radius: 5px;
+    -webkit-border-top-right-radius: 5px;
+    -moz-border-radius-topleft: 5px;
+    -moz-border-radius-topright: 5px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.form-fields div.form-field:last-child {
+    -webkit-border-bottom-right-radius: 5px;
+    -webkit-border-bottom-left-radius: 5px;
+    -moz-border-radius-bottomright: 5px;
+    -moz-border-radius-bottomleft: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#access-form .form-field label {
+    display: inline-block;
+    width: 30%;
+    padding: 15px 0;
+    padding-left: 20px;
+    font-weight: 700;
+    margin: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#access-form .form-field input {
+    display: inline-block;
+    width: 65%;
+    border: none;
+    padding: 10px 15px;
+    color: #FFF;
+    margin: 0;
+    background: transparent;
+}
+
+#access-form .form-buttons {
+    padding-top: 20px;
+    text-align: center;
+}
+
+#access-form .form-buttons input[type="submit"] {
+    display: inline-block;
+    width: 48%;
+    margin-right: 1%;
+    padding: 15px 0;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    text-shadow: none;
+    color: rgb(17,83,148);
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+#access-form .form-buttons input[type="submit"]:hover {
+    background: #FFF;
+    border-color: #FFF;
+}
+
+#access-form .form-buttons input[type="button"] {
+    display: inline-block;
+    width: 48%;
+    margin-left: 1%;
+    padding: 15px 0;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-weight: 700;
+    color: #FFF;
+    background: transparent;
+    border-radius: 4px;
+}
+
+#access-form .form-buttons input[type="button"]:hover {
+    border-color: #FFF;
+}
+
+#alert {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 9999;
+    padding: 25px;
+    text-align: center;
+    text-shadow: none;
+    font-weight: 700;
+    background: #FFF;
+    color: rgb(17,83,148);
+}
+
+.success {
+    background: rgb(35,179,69) !important;
+    color: #FFF !important;
+}
+
+.error {
+    background: rgb(207,41,9) !important;
+    color: #FFF !important;
+}
+
+#left-side {
+    float: left;
+    background: #FFF;
+    height: 100%;
+    width: 70%;
+}
+
+aside {
+    float: right;
+    height: 100%;
+    width: 30%;
+}
+
+#search-form {
+    padding: 20px;
+}
+
+#search-form input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    background: transparent;
+    color:    #FFF;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+}
+
+#search-form input:focus {
+    border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+#search-form input::-webkit-input-placeholder {
+    color:    #eee;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+}
+
+#search-form input:-moz-placeholder {
+    color:    #eee;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+}
+
+#search-form input::-moz-placeholder {
+    color:    #eee;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+}
+#search-form input:-ms-input-placeholder {
+    color:    #eee;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+}
+
+#tags {
+    padding: 20px;
+}
+
+#tags h3 {
+    font-weight: 700;
+    font-size: 1.5em;
+    font-family: 'Montserrat', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    text-shadow: 0px -2px 0px rgb(17,83,148);
 }
 
 /* ==========================================================================

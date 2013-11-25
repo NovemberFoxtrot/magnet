@@ -1,4 +1,4 @@
-package magnet
+package main
 
 import r "github.com/christopherhesse/rethinkgo"
 

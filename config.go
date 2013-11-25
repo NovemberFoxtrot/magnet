@@ -1,4 +1,4 @@
-package magnet
+package main
 
 type Config struct {
 	ConnectionString string

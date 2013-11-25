@@ -1,8 +1,10 @@
 <div id="base-container">
+    <header><h1><span class="ion-magnet"></span></h1></header>
+
+    <h2>Access magnet</h2>
+
     <form id="access-form" onsubmit="submitAccessForm(this); return false;">
-        <div class="notice error hidden">
-        </div>
-        
+        <div class="form-fields">
         <div class="form-field">
             <label for="username">Username</label>
             <input type="text" id="username" name="username" class="form-input" required />
@@ -16,6 +18,7 @@
         <div class="form-field">
             <label for="password">Password</label>
             <input type="password" id="password" name="password" class="form-input" required />
+        </div>
         </div>
         
         <input type="hidden" id="csrf_token" name="csrf_token" value="{{{csrf_token}}}" />

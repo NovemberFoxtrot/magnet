@@ -1,7 +1,6 @@
 package main
 
 import (
-	"./magnet"
 	"encoding/json"
 	"fmt"
 	r "github.com/christopherhesse/rethinkgo"
@@ -39,7 +38,7 @@ func main() {
 	// Read config
 	reader, _ := os.Open("config.json")
 	decoder := json.NewDecoder(reader)
-	config := &magnet.Config{}
+	config := &Config{}
 	decoder.Decode(&config)
 
 	// Init database
@@ -54,41 +53,41 @@ func main() {
 	m.Map(store)
 	// It will be available to all handlers as *r.Session
 	m.Map(dbSession)
-	// It will be available to all handlers as *magnet.Config
+	// It will be available to all handlers as *Config
 	m.Map(config)
 	// public folder will serve the static content
 	m.Use(martini.Static("public"))
 
 	// Tag-related routes
-	//m.Get("/tag/:tag", magnet.AuthRequired, magnet.GetTagHandler)
-	//m.Post("/tag", magnet.AuthRequired, magnet.NewTagHandler)
-	//m.Put("/tag/:tag", magnet.AuthRequired, magnet.EditTagHandler)
-	//m.Delete("/tag/:tag", magnet.AuthRequired, magnet.EditTagHandler)
+	//m.Get("/tag/:tag", AuthRequired, GetTagHandler)
+	//m.Post("/tag", AuthRequired, NewTagHandler)
+	//m.Put("/tag/:tag", AuthRequired, EditTagHandler)
+	//m.Delete("/tag/:tag", AuthRequired, EditTagHandler)
 
 	// Bookmark-related routes
-	m.Get("/bookmarks/:page", magnet.AuthRequired, magnet.GetBookmarksHandler)
-	m.Post("/bookmark", magnet.AuthRequired, magnet.NewBookmarkHandler)
-	m.Put("/bookmark/:bookmark", magnet.AuthRequired, magnet.EditBookmarkHandler)
-	m.Delete("/bookmark/:bookmark", magnet.AuthRequired, magnet.DeleteBookmarkHandler)
+	m.Get("/bookmarks/:page", AuthRequired, GetBookmarksHandler)
+	m.Post("/bookmark", AuthRequired, NewBookmarkHandler)
+	m.Put("/bookmark/:bookmark", AuthRequired, EditBookmarkHandler)
+	m.Delete("/bookmark/:bookmark", AuthRequired, DeleteBookmarkHandler)
 
 	// Search
-	//m.Post("/search", magnet.AuthRequired, magnet.SearchHandler)
+	//m.Post("/search", AuthRequired, SearchHandler)
 
 	// User-related routes
-	m.Post("/login", magnet.LoginPostHandler)
-	m.Get("/logout", magnet.AuthRequired, magnet.LogoutHandler)
-	m.Post("/signup", magnet.SignUpHandler)
-	m.Post("/new_token", magnet.AuthRequired, magnet.RequestNewToken)
+	m.Post("/login", LoginPostHandler)
+	m.Get("/logout", AuthRequired, LogoutHandler)
+	m.Post("/signup", SignUpHandler)
+	m.Post("/new_token", AuthRequired, RequestNewToken)
 
 	// Home
 	m.Get("/", func(cs *s.CookieStore, req *h.Request, w h.ResponseWriter, dbSession *r.Session) {
-		if magnet.GetUserId(cs, req, dbSession) == "" {
-			magnet.LoginHandler(req, w)
+		if GetUserId(cs, req, dbSession) == "" {
+			LoginHandler(req, w)
 		}
-	}, magnet.IndexHandler)
+	}, IndexHandler)
 
 	csrfHandler := nosurf.New(m)
-	csrfHandler.SetFailureHandler(h.HandlerFunc(magnet.CsrfFailHandler))
+	csrfHandler.SetFailureHandler(h.HandlerFunc(CsrfFailHandler))
 
 	h.ListenAndServe(config.Port, csrfHandler)
 }
