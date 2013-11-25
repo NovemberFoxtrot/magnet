@@ -44,7 +44,7 @@ func GetBookmarks(page int64, dbSession *r.Session, userId string) []Bookmark {
 			}
 		}
 	}
-
+    
 	return bookmarks
 }
 

@@ -38,7 +38,6 @@ function submitAccessForm(form) {
     var username = form.username.value;
     var password = form.password.value;
     var token = form.csrf_token.value;
-
     var data = 'username=' + username;
     data += '&password=' + password;
     if (form.submit.value !== 'Login')
@@ -56,11 +55,9 @@ function submitAccessForm(form) {
                 refresh();
             }
         } : function(response) {
-            if (response.error) {
-                showAlert(response.message, 'error');
-            } else {
-                showAlert('You have been successfully signed up!', 'success');
-                refresh();
+                window.setTimeout(function() {
+                    window.location.href = window.location.href;
+                }, 3000);
             }
         },
         token
