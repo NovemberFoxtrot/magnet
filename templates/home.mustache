@@ -10,7 +10,7 @@
 			<div class="form-field hidden">
 				<span class="ion-ios7-pricetag form-icon"></span><input type="text" name="tags" id="bk-tags" placeholder="Tags (separated by commas)" />
 			</div>
-			<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+			<input type="hidden" name="csrf_token" id="csrf_token" value="{{csrf_token}}" />
 			<div class="form-buttons">
 				<input type="submit" name="submit" id="submit-add-bookmark" value="Add bookmark" />
 			</div>
@@ -19,6 +19,10 @@
 	<section id="list-bookmarks">
 		{{#bookmarks}}
 		<article>
+			<div class="bookmark-actions">
+				<a href="#" class="bookmark-edit" onclick="editBookmark('{{Id}}', this.parentNode.parentNode);"><span class="ion-levels"></span></a>
+				<a href="#" class="bookmark-delete" onclick="deleteBookmark('{{Id}}', this.parentNode.parentNode);"><span class="ion-trash-b"></span></a>
+			</div>
 			<h3><a href="{{Url}}">{{Title}}</a></h3>
 			<div class="bookmark-url"><span class="ion-link bookmark-icon"></span> {{Url}}</div> <div class="bookmark-date"><span class="ion-clock bookmark-icon"></span> {{Date}}</div>
             <div class="bookmark-tags">
@@ -60,7 +64,7 @@
 	<div id="info">
 		<ul>
 			<li><a href="/logout"><span class="ion-log-out info-icon"></span> Logout</a></li>
-			<li class="copy">Powered by Magnet.<br /><a href="https://github.com/mvader/magnet">Get the code!</a></li>
+			<li class="copy">Powered by Magnet.<br /><a href="https://github.com/mvader/magnet"><span class="ion-social-github info-icon"></span></a></li>
 		</ul>
 	</div>
 </aside>

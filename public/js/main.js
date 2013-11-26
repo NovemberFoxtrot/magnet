@@ -148,6 +148,7 @@ function updateTags(tags) {
 
     // Look for the tags in the tag list
     // Update their count
+    // Add those which are not in the tag list
 }
 
 function toggleBookmarkForm(open) {
@@ -160,4 +161,24 @@ function toggleBookmarkForm(open) {
             fields[i].className = 'form-field' + htmlClass;
     }
     form.getElementsByClassName('form-buttons').className = 'form-buttons' + htmlClass;
+}
+
+function deleteBookmark(id, elem) {
+    if (confirm("Are you sure you want to delete that?")) {
+        AJAXRequest(
+            'DELETE',
+            '/bookmark/delete/' + id,
+            '',
+            function(response) {
+                if (response.error) {
+                    showAlert(response.message, 'error');
+                } else {
+                    showAlert('Bookmark deleted successfully.', 'success');
+                    elem.style.display = 'none';
+                    // TODO update tags
+                }
+            },
+            document.getElementById('csrf_token').value
+        );
+    }
 }

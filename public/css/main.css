@@ -344,10 +344,6 @@ aside {
     text-transform: none !important;
 }
 
-.copy a {
-    border-bottom: 1px solid #FFF;
-}
-
 span.tag-count {
     color: #ddd;
     font-size: 0.8em;
@@ -485,6 +481,32 @@ article.empty p {
 
 span.bookmark-tag + span.bookmark-tag::before {
     content: ", ";
+}
+
+.bookmark-actions {
+    position: absolute;
+    margin-left: -50px;
+    width: 30px;
+    line-height: 2.6em;
+}
+
+.bookmark-actions a {
+    display: block;
+    font-size: 1.4em;
+    text-align: center;
+    text-decoration: none !important;
+    border: none !important;
+    color: #FFF !important;
+    -webkit-transition: all 200ms ease-in;
+    transition: all 200ms ease-in;
+}
+
+#list-bookmarks article:hover .bookmark-actions a {
+    color: #CCC !important;
+}
+
+#list-bookmarks article:hover .bookmark-actions a:hover {
+    color: rgb(11, 121, 229) !important;
 }
 
 /* END BOOKMARKS */
