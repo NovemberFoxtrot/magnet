@@ -92,7 +92,8 @@ function submitNewBookmark(form) {
                 }
  
                 lb = document.getElementById('list-bookmarks');
-                lb.innerHTML = renderBookmark(title.value, url.value, tags.value) + lb.innerHTML;
+                lb.innerHTML = renderBookmark(response.message, title.value, url.value, tags.value) + lb.innerHTML;
+                updateTags(tags.value);
                 title.value = '';
                 url.value = '';
                 tags.value = '';
@@ -114,10 +115,11 @@ function showAlert(msg, htmlClass) {
     }, 2000);
 }
 
-function renderBookmark(title, url, tags, date) {
+function renderBookmark(bkId, title, url, tags, date) {
     if (date === undefined) {
         date = 'Just now';
     }
+    // TODO delete and edit buttons
 	bookmarkHtml = '<article>' + 
 		'<h3><a href="'+ url + '">' + title + '</a></h3>' +
 		'<div class="bookmark-url"><span class="ion-link bookmark-icon"></span> ' + url + '</div> ' + 
@@ -134,6 +136,18 @@ function renderBookmark(title, url, tags, date) {
     bookmarkHtml += '</div></article>';
     
     return bookmarkHtml;
+}
+
+function updateTags(tags) {
+    if (tags.trim() !== '') {
+        tagArray = tags.split(',');
+        for (i in tagArray) {
+            tagArray[i] = tagArray[i].trim().toLowerCase();
+        }
+    }
+
+    // Look for the tags in the tag list
+    // Update their count
 }
 
 function toggleBookmarkForm(open) {

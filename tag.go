@@ -1,24 +1,52 @@
 package main
 
-import r "github.com/christopherhesse/rethinkgo"
+import (
+	r "github.com/christopherhesse/rethinkgo"
+)
 
 type Tag struct {
-	Title   string
-	Count   int
-	User    string
-	Created int32
+	Name  string
+	Count int
 }
 
 func GetTags(dbSession *r.Session, userId string) []Tag {
+	var response []interface{}
+	tagMap := make(map[string]int)
 	var tags []Tag
 
-	r.Db("magnet").
-		Table("tags").
+	err := r.Db("magnet").
+		Table("bookmarks").
 		Filter(r.Row.Attr("User").
 		Eq(userId)).
-		OrderBy("id").
+		WithFields("Tags").
 		Run(dbSession).
-		All(&tags)
+		All(&response)
+
+	if err == nil {
+		// Search por repeated tags and count them
+		for _, tagsMap := range response {
+			for _, tag := range tagsMap.(map[string]interface{})["Tags"].([]interface{}) {
+				if _, ok := tagMap[tag.(string)]; ok {
+					tagMap[tag.(string)]++
+				} else {
+					tagMap[tag.(string)] = 1
+				}
+			}
+		}
+
+		// Then put them in a tag map
+		tags = make([]Tag, len(tagMap))
+		i := 0
+		for tag, count := range tagMap {
+			tags[i] = Tag{Name: tag, Count: count}
+			i++
+		}
+	}
 
 	return tags
+}
+
+// not implemented yet
+func GetTagHandler() {
+
 }

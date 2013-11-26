@@ -36,11 +36,8 @@ func GetBookmarks(page int64, dbSession *r.Session, userId string) []Bookmark {
 
 	if err == nil {
 		for i, _ := range bookmarks {
-			bookmarks[i].Date = time.Unix(int64(bookmarks[i].Created), 0).Format("Jan 2, 2006 at 3:04pm")
-			if len(bookmarks[i].Tags) < 2 {
-				if bookmarks[i].Tags[0] == "" {
-					bookmarks[i].Tags = []string{"No tags"}
-				}
+			if len(bookmarks[i].Tags) < 1 {
+				bookmarks[i].Tags = []string{"No tags"}
 			}
 		}
 	}
@@ -71,12 +68,14 @@ func NewBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, d
 	_, userId := GetUserData(cs, req)
 	bookmark := new(Bookmark)
 	bookmark.Title = req.PostFormValue("title")
-	bookmark.Tags = strings.Split(req.PostFormValue("tags"), ",")
-	for i, v := range bookmark.Tags {
-		bookmark.Tags[i] = strings.ToLower(strings.TrimSpace(v))
+	if req.PostFormValue("tags") != "" {
+		bookmark.Tags = strings.Split(req.PostFormValue("tags"), ",")
+		for i, v := range bookmark.Tags {
+			bookmark.Tags[i] = strings.ToLower(strings.TrimSpace(v))
+		}
 	}
 	bookmark.Created = float64(time.Now().Unix())
-	// TODO update tag count
+	bookmark.Date = time.Unix(int64(bookmark.Created), 0).Format("Jan 2, 2006 at 3:04pm")
 	bookmark.Url = req.PostFormValue("url")
 	bookmark.User = userId
 
@@ -88,7 +87,7 @@ func NewBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, d
 		One(&response)
 
 	if response.Inserted > 0 {
-		WriteJsonResponse(200, false, "Bookmark inserted.", req, w)
+		WriteJsonResponse(200, false, response.GeneratedKeys[0].(string), req, w)
 	} else {
 		WriteJsonResponse(200, true, "Error inserting bookmark.", req, w)
 	}

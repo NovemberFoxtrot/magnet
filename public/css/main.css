@@ -95,6 +95,7 @@ body {
 #aside-head h1 {
     font-size: 4.5em;
     margin-top: 15px;
+    color: rgba(255, 255, 255, 0.9);
 }
 
 #base-container h2 {
@@ -288,8 +289,8 @@ aside {
     font-weight: 700;
 }
 
-#tags {
-    padding: 20px;
+#tags, #info {
+    padding: 40px;
 }
 
 #tags h3 {
@@ -302,6 +303,55 @@ aside {
     padding: 0;
     margin: 0;
     text-shadow: 0px -2px 0px rgb(17,83,148);
+}
+
+#tags ul, #info ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    margin-top: 10px;
+}
+
+#tags ul li, #info ul li {
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 1.7em;
+}
+
+#info {
+    text-align: center;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 1px 0 rgba(255, 255, 255, 0.1) inset;
+}
+
+#info ul {
+    margin: 0;
+}
+
+#info ul li a {
+    color: #FFF;
+    text-decoration: none;
+}
+
+.info-icon {
+    vertical-align: middle;
+    font-size: 1.6em;
+    padding-right: 6px;
+}
+
+.copy {
+    padding-top: 15px;
+    text-transform: none !important;
+}
+
+.copy a {
+    border-bottom: 1px solid #FFF;
+}
+
+span.tag-count {
+    color: #ddd;
+    font-size: 0.8em;
+    padding-left: 6px;
 }
 
 article.empty h3 {
@@ -438,6 +488,10 @@ span.bookmark-tag + span.bookmark-tag::before {
 }
 
 /* END BOOKMARKS */
+
+.clickable {
+    cursor: pointer;
+}
 
 /* ==========================================================================
    Media Queries

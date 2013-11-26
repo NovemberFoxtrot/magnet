@@ -23,7 +23,6 @@ func initDatabase(connectionString string) *r.Session {
 	r.TableCreate("users").Run(session).Exec()
 	r.TableCreate("bookmarks").Run(session).Exec()
 	r.TableCreate("sessions").Run(session).Exec()
-	r.TableCreate("tags").Run(session).Exec()
 
 	// Delete all expired sessions
 	var rsp r.WriteResponse
@@ -65,10 +64,7 @@ func main() {
 	m.Use(martini.Static("public"))
 
 	// Tag-related routes
-	//m.Get("/tag/:tag", AuthRequired, GetTagHandler)
-	//m.Post("/tag", AuthRequired, NewTagHandler)
-	//m.Put("/tag/:tag", AuthRequired, EditTagHandler)
-	//m.Delete("/tag/:tag", AuthRequired, EditTagHandler)
+	m.Get("/tag/:tag", AuthRequired, GetTagHandler)
 
 	// Bookmark-related routes
 	m.Get("/bookmarks/:page", AuthRequired, GetBookmarksHandler)

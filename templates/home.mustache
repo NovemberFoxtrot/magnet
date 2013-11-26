@@ -49,13 +49,19 @@
 
 		<ul>
 		{{#tags}}
+        <li class="clickable" onclick="getBookmarksForTag('{{Name}}');">{{Name}} <span class="tag-count">({{Count}})</span></li>
 		{{/tags}}
 		{{^tags}}
 		<li>No tags</li>
 		{{/tags}}
 		</li>
+	</div>
 
-		<button id="add-tag">Add tag</button>
+	<div id="info">
+		<ul>
+			<li><a href="/logout"><span class="ion-log-out info-icon"></span> Logout</a></li>
+			<li class="copy">Powered by Magnet.<br /><a href="https://github.com/mvader/magnet">Get the code!</a></li>
+		</ul>
 	</div>
 </aside>
 
