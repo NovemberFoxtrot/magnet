@@ -158,6 +158,17 @@ function renderBookmark(bkId, title, url, tags, date) {
     return bookmarkHtml;
 }
 
+function getTagsFromBookmark(bookmarkElem) {
+    tagElems = bookmarkElem.getElementsByClassName('bookmark-tag');
+    tags = [];
+    for (i = 0; i < tagElems.length; i++) {
+        tag = tagElems[i].innerHTML;
+        if (tag !== 'No tags') tags.push(tag);
+    }
+    
+    return tags.join(', ');
+}
+
 function appendTag(ulNode, tag, tagCount) {
     if (tagCount === undefined) tagCount = 1;
     ulNode.innerHTML += '<li class="clickable" onclick="getBookmarksForTag(\'' + 
@@ -185,24 +196,9 @@ function updateTags(tags, deleteTags) {
                 appendTag(ulNode, tagArray[i]);
             }
         } else {
-            // Update the count of the existing tags
-            // BUG: just updates the first occurrence
-            /*for (i in tagList) {
-                tag = tagList[i].innerHTML.split(' <span class="tag-count">')[0];
-                if (tagArray.indexOf(tag) !== -1) {
-                    tagList[i].innerHTML = '<li class="clickable" onclick="getBookmarksForTag(\'' + 
-                        tag + '\');">' + tag + ' <span class="tag-count">(' +
-                        (Number(tagList[i].innerHTML.split('(')[1].
-                        split(')')[0]) + 1) + ')</span></li>';
-                    tagArray[tagArray.indexOf(tag)] = null;
-                }
-            }*/
-            
-            // Doesn't work as well but can be used for deletion and edit, so...
-            // It's better to fix this one
             newTags = [];
             
-            for (i in tagList) {
+            for (i = 0; i < tagList.length; i++) {
                 tag = tagList[i].innerHTML.split(' <span class="tag-count">')[0];
                 tagCount = Number(tagList[i].innerHTML.split('(')[1].
                         split(')')[0]);
@@ -212,7 +208,8 @@ function updateTags(tags, deleteTags) {
                 }
                 
                 if (tagCount > 0) {
-                    newTags = [tag, tagCount];
+                    newTags.push([tag, tagCount]);
+                    console.log(newTags);
                 }
             }
             
@@ -220,12 +217,12 @@ function updateTags(tags, deleteTags) {
             for (i in newTags) {
                 appendTag(ulNode, newTags[i][0], newTags[i][1]);
             }
-            
-            // Add the new tags
-            // BUG: It doesn't add new tags
-            for (i in tagArray) {
-                if (tagArray[i] !== null) {
-                    appendTag(ulNode, tagArray[i]);
+
+            if (!deleteTags) {
+                for (i in tagArray) {
+                    if (tagArray[i] !== null) {
+                        appendTag(ulNode, tagArray[i]);
+                    }
                 }
             }
         }
@@ -256,7 +253,7 @@ function deleteBookmark(id, elem) {
                 } else {
                     showAlert('Bookmark deleted successfully.', 'success');
                     elem.style.display = 'none';
-                    // TODO update tags
+                    updateTags(getTagsFromBookmark(elem), true);
                 }
             },
             document.getElementById('csrf_token').value
