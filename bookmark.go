@@ -71,7 +71,7 @@ func NewBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, d
 	bookmark["Title"] = req.PostFormValue("title")
 	bookmark["Url"] = req.PostFormValue("url")
     
-    if !IsValidUrl(bookmark["Url"]) || len(bookmark["Title"]) < 1 {
+    if !IsValidUrl(bookmark["Url"].(string)) || len(bookmark["Title"].(string)) < 1 {
         WriteJsonResponse(200, true, "The url is not valid or the title is empty.", req, w)
     } else {
         _, userId := GetUserData(cs, req)
