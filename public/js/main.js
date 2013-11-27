@@ -72,6 +72,11 @@ function submitNewBookmark(form) {
         tags = form.tags,
         token = form.csrf_token.value,
         data = '';
+        
+    if (title.length < 1) {
+        showAlert('Title cannot be blank!', 'error');
+        return;
+    }
 
     data += 'title=' + title.value;
     data += '&url=' + url.value;
