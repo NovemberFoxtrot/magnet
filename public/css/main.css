@@ -342,6 +342,7 @@ aside {
 .copy {
     padding-top: 15px;
     text-transform: none !important;
+    font-weight: 400 !important;
 }
 
 span.tag-count {

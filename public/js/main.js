@@ -71,15 +71,26 @@ function submitNewBookmark(form) {
         url = form.url,
         tags = form.tags,
         token = form.csrf_token.value,
-        data = '';
+        data = '',
+        errorMessages = [];
         
-    if (title.length < 1) {
-        showAlert('Title cannot be blank!', 'error');
+    if (title.value.length < 1) {
+        errorMessages.push('Title cannot be blank.');
+    }
+    
+    if (url.value.length < 5 || 
+        !(url.value.indexOf('http://') !== -1 || url.value.indexOf('https://') !== -1)) {
+        errorMessages.push('Invalid url.');
+    }
+    
+    if (errorMessages.length > 0) {
+        showAlert(errorMessages.join(' '), 'error');
         return;
     }
 
     data += 'title=' + title.value;
     data += '&url=' + url.value;
+    // TODO strip HTML tags
     data += '&tags=' + tags.value;
 
     AJAXRequest(
@@ -126,6 +137,10 @@ function renderBookmark(bkId, title, url, tags, date) {
     }
     // TODO delete and edit buttons
 	bookmarkHtml = '<article>' + 
+        '<div class="bookmark-actions">' +
+		'<a href="#" class="bookmark-edit" onclick="editBookmark(\'' + bkId + '\', this.parentNode.parentNode);"><span class="ion-levels"></span></a>' +
+		'<a href="#" class="bookmark-delete" onclick="deleteBookmark(\'' + bkId + '\', this.parentNode.parentNode);"><span class="ion-trash-b"></span></a>' +
+		'</div>' +
 		'<h3><a href="'+ url + '">' + title + '</a></h3>' +
 		'<div class="bookmark-url"><span class="ion-link bookmark-icon"></span> ' + url + '</div> ' + 
         '<div class="bookmark-date"><span class="ion-clock bookmark-icon"></span> ' + date + '</div>' +
@@ -143,17 +158,78 @@ function renderBookmark(bkId, title, url, tags, date) {
     return bookmarkHtml;
 }
 
-function updateTags(tags) {
+function appendTag(ulNode, tag, tagCount) {
+    if (tagCount === undefined) tagCount = 1;
+    ulNode.innerHTML += '<li class="clickable" onclick="getBookmarksForTag(\'' + 
+        tag + '\');">' + tag + ' <span class="tag-count">(' + tagCount + ')</span></li>';
+}
+
+function updateTags(tags, deleteTags) {
     if (tags.trim() !== '') {
         tagArray = tags.split(',');
         for (i in tagArray) {
             tagArray[i] = tagArray[i].trim().toLowerCase();
         }
+        
+        if (deleteTags === undefined) deleteTags = false;
+        
+        ulNode = document.getElementById('tags').
+            getElementsByTagName('ul')[0];
+        tagList = ulNode.getElementsByTagName('li');
+            
+        // If there is only one element and it's not clickable it means
+        // that this element is the No tags placeholder.
+        if (tagList.length === 1 && tagList[0].className !== 'clickable' && !deleteTags) {
+            tagList[0].style.display = 'none';
+            for (i in tagArray) {
+                appendTag(ulNode, tagArray[i]);
+            }
+        } else {
+            // Update the count of the existing tags
+            // BUG: just updates the first occurrence
+            /*for (i in tagList) {
+                tag = tagList[i].innerHTML.split(' <span class="tag-count">')[0];
+                if (tagArray.indexOf(tag) !== -1) {
+                    tagList[i].innerHTML = '<li class="clickable" onclick="getBookmarksForTag(\'' + 
+                        tag + '\');">' + tag + ' <span class="tag-count">(' +
+                        (Number(tagList[i].innerHTML.split('(')[1].
+                        split(')')[0]) + 1) + ')</span></li>';
+                    tagArray[tagArray.indexOf(tag)] = null;
+                }
+            }*/
+            
+            // Doesn't work as well but can be used for deletion and edit, so...
+            // It's better to fix this one
+            newTags = [];
+            
+            for (i in tagList) {
+                tag = tagList[i].innerHTML.split(' <span class="tag-count">')[0];
+                tagCount = Number(tagList[i].innerHTML.split('(')[1].
+                        split(')')[0]);
+                if (tagArray.indexOf(tag) !== -1) {
+                    tagCount += (deleteTags ? -1 : 1);
+                    tagArray[tagArray.indexOf(tag)] = null;
+                }
+                
+                if (tagCount > 0) {
+                    newTags = [tag, tagCount];
+                }
+            }
+            
+            ulNode.innerHTML = '';
+            for (i in newTags) {
+                appendTag(ulNode, newTags[i][0], newTags[i][1]);
+            }
+            
+            // Add the new tags
+            // BUG: It doesn't add new tags
+            for (i in tagArray) {
+                if (tagArray[i] !== null) {
+                    appendTag(ulNode, tagArray[i]);
+                }
+            }
+        }
     }
-
-    // Look for the tags in the tag list
-    // Update their count
-    // Add those which are not in the tag list
 }
 
 function toggleBookmarkForm(open) {
