@@ -66,33 +66,38 @@ func IndexHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSessi
 }
 
 func NewBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
-	_, userId := GetUserData(cs, req)
 	// We use a map instead of Bookmark because id would be ""
 	bookmark := make(map[string]interface{})
 	bookmark["Title"] = req.PostFormValue("title")
-	if req.PostFormValue("tags") != "" {
-		bookmark["Tags"] = strings.Split(req.PostFormValue("tags"), ",")
-		for i, v := range bookmark["Tags"].([]string) {
-			bookmark["Tags"].([]string)[i] = strings.ToLower(strings.TrimSpace(v))
-		}
-	}
-	bookmark["Created"] = float64(time.Now().Unix())
-	bookmark["Date"] = time.Unix(int64(bookmark["Created"].(float64)), 0).Format("Jan 2, 2006 at 3:04pm")
 	bookmark["Url"] = req.PostFormValue("url")
-	bookmark["User"] = userId
+    
+    if !IsValidUrl(bookmark["Url"]) || len(bookmark["Title"]) < 1 {
+        WriteJsonResponse(200, true, "The url is not valid or the title is empty.", req, w)
+    } else {
+        _, userId := GetUserData(cs, req)
+    	if req.PostFormValue("tags") != "" {
+    		bookmark["Tags"] = strings.Split(req.PostFormValue("tags"), ",")
+    		for i, v := range bookmark["Tags"].([]string) {
+    			bookmark["Tags"].([]string)[i] = strings.ToLower(strings.TrimSpace(v))
+    		}
+    	}
+    	bookmark["Created"] = float64(time.Now().Unix())
+    	bookmark["Date"] = time.Unix(int64(bookmark["Created"].(float64)), 0).Format("Jan 2, 2006 at 3:04pm")
+    	bookmark["User"] = userId
 
-	var response r.WriteResponse
-	r.Db("magnet").
-		Table("bookmarks").
-		Insert(bookmark).
-		Run(dbSession).
-		One(&response)
+    	var response r.WriteResponse
+    	r.Db("magnet").
+    		Table("bookmarks").
+    		Insert(bookmark).
+    		Run(dbSession).
+    		One(&response)
 
-	if response.Inserted > 0 {
-		WriteJsonResponse(200, false, response.GeneratedKeys[0], req, w)
-	} else {
-		WriteJsonResponse(200, true, "Error inserting bookmark.", req, w)
-	}
+    	if response.Inserted > 0 {
+    		WriteJsonResponse(200, false, response.GeneratedKeys[0], req, w)
+    	} else {
+    		WriteJsonResponse(200, true, "Error inserting bookmark.", req, w)
+    	}
+    }
 }
 
 func EditBookmarkHandler() {
@@ -102,7 +107,7 @@ func DeleteBookmarkHandler(params m.Params, req *h.Request, w h.ResponseWriter, 
 	_, userId := GetUserData(cs, req)
 	var response r.WriteResponse
 
-	err :=r.Db("magnet").
+	err := r.Db("magnet").
 		Table("bookmarks").
 		Filter(r.Row.Attr("User").
 		Eq(userId).

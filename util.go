@@ -5,6 +5,7 @@ import (
 	r "github.com/christopherhesse/rethinkgo"
 	s "github.com/gorilla/sessions"
 	h "net/http"
+    "net/url"
 	"time"
 )
 
@@ -57,4 +58,13 @@ func AuthRequired(cs *s.CookieStore, req *h.Request, w h.ResponseWriter, dbSessi
 
 func CsrfFailHandler(w h.ResponseWriter, r *h.Request) {
 	WriteJsonResponse(200, true, "Provided token is not valid.", r, w)
+}
+
+func IsValidUrl(urlStr string) bool {
+    parsedUrl, err := url.Parse(urlStr)
+    if err != nil {
+        return false;
+    }
+    
+    return parsedUrl.IsAbs()
 }
