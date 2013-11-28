@@ -79,7 +79,7 @@ function submitAccessForm(form) {
 function submitNewBookmark(form) {
     var title = form.title,
         url = form.url,
-        tags = form.tags.trim(),
+        tags = form.tags,
         token = form.csrf_token.value,
         data = '',
         errorMessages = [];
@@ -141,17 +141,17 @@ function showAlert(msg, htmlClass) {
 }
 
 function renderBookmark(bkId, title, url, tags, date) {
-    var editing = false;
+    var editing = true;
     if (date === undefined) {
         date = 'Just now';
-        editing = true;
+        editing = false;
     }
 
     title = escapeHTMLEntities(title);
     url = escapeHTMLEntities(url);
     tags = escapeHTMLEntities(tags);
 
-	bookmarkHtml = (!editing ? '<article id="bookmark_' + bkId + '">' : '') + 
+	bookmarkHtml = ((!editing) ? '<article id="bookmark_' + bkId + '">' : '') + 
         '<div class="bookmark-actions">' +
 		'<a href="#" class="bookmark-edit" onclick="editBookmark(\'' + bkId + '\', this.parentNode.parentNode);"><span class="ion-levels"></span></a>' +
 		'<a href="#" class="bookmark-delete" onclick="deleteBookmark(\'' + bkId + '\', this.parentNode.parentNode);"><span class="ion-trash-b"></span></a>' +
@@ -168,7 +168,7 @@ function renderBookmark(bkId, title, url, tags, date) {
             bookmarkHtml += '<span class="bookmark-tag">' + tagArray[i].trim().toLowerCase() + '</span>';
         }
     }
-    bookmarkHtml += '</div>' + (!editing ? '</article>' : '');
+    bookmarkHtml += '</div>' + ((!editing) ? '</article>' : '');
     
     return bookmarkHtml;
 }
@@ -285,11 +285,11 @@ function deleteBookmark(id, elem) {
 function editBookmark(form) {
     var title = form.title,
         url = form.url,
-        tags = form.tags.trim(),
+        tags = form.tags,
         token = form.csrf_token.value,
         bookmarkId = form.bookmark_id,
         date = form.bookmark_date,
-        oldTags = form.old_tags.trim(),
+        oldTags = form.old_tags,
         data = '',
         errorMessages = [];
         
