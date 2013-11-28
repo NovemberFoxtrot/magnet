@@ -11,14 +11,17 @@
 				<span class="ion-ios7-pricetag form-icon"></span><input type="text" name="tags" id="bk-tags" placeholder="Tags (separated by commas)" />
 			</div>
 			<input type="hidden" name="csrf_token" id="csrf_token" value="{{csrf_token}}" />
+			<input type="hidden" name="bookmark_date" id="bookmark_date" value="" />
+			<input type="hidden" name="old_tags" id="old_tags" value="" />
 			<div class="form-buttons">
 				<input type="submit" name="submit" id="submit-add-bookmark" value="Add bookmark" />
+				<button id="toggle_edit_form" class="button-action hidden"><span class="ion-close form-icon"></span>Discard changes</button>
 			</div>
 		</form>
 	</div>
 	<section id="list-bookmarks">
 		{{#bookmarks}}
-		<article>
+		<article id="bookmark_{{Id}}">
 			<div class="bookmark-actions">
 				<a href="#" class="bookmark-edit" onclick="editBookmark('{{Id}}', this.parentNode.parentNode);"><span class="ion-levels"></span></a>
 				<a href="#" class="bookmark-delete" onclick="deleteBookmark('{{Id}}', this.parentNode.parentNode);"><span class="ion-trash-b"></span></a>

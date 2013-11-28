@@ -33,6 +33,16 @@ function refresh() {
     }, 3000);
 }
 
+function escapeHTMLEntities(str) {
+    return str.replace(/[&<>]/g, function(entity) {
+        return {
+            '&' : '&amp;',
+            '<' : '&lt;',
+            '>' : '&gt;'
+        } || entity;
+    });
+}
+
 function submitAccessForm(form) {
     var mail = form.email.value;
     var username = form.username.value;
@@ -69,7 +79,7 @@ function submitAccessForm(form) {
 function submitNewBookmark(form) {
     var title = form.title,
         url = form.url,
-        tags = form.tags,
+        tags = form.tags.trim(),
         token = form.csrf_token.value,
         data = '',
         errorMessages = [];
@@ -90,7 +100,6 @@ function submitNewBookmark(form) {
 
     data += 'title=' + title.value;
     data += '&url=' + url.value;
-    // TODO strip HTML tags
     data += '&tags=' + tags.value;
 
     AJAXRequest(
@@ -132,11 +141,17 @@ function showAlert(msg, htmlClass) {
 }
 
 function renderBookmark(bkId, title, url, tags, date) {
+    var editing = false;
     if (date === undefined) {
         date = 'Just now';
+        editing = true;
     }
-    // TODO delete and edit buttons
-	bookmarkHtml = '<article>' + 
+
+    title = escapeHTMLEntities(title);
+    url = escapeHTMLEntities(url);
+    tags = escapeHTMLEntities(tags);
+
+	bookmarkHtml = (!editing ? '<article id="bookmark_' + bkId + '">' : '') + 
         '<div class="bookmark-actions">' +
 		'<a href="#" class="bookmark-edit" onclick="editBookmark(\'' + bkId + '\', this.parentNode.parentNode);"><span class="ion-levels"></span></a>' +
 		'<a href="#" class="bookmark-delete" onclick="deleteBookmark(\'' + bkId + '\', this.parentNode.parentNode);"><span class="ion-trash-b"></span></a>' +
@@ -153,7 +168,7 @@ function renderBookmark(bkId, title, url, tags, date) {
             bookmarkHtml += '<span class="bookmark-tag">' + tagArray[i].trim().toLowerCase() + '</span>';
         }
     }
-    bookmarkHtml += '</div></article>';
+    bookmarkHtml += '</div>' + (!editing ? '</article>' : '');
     
     return bookmarkHtml;
 }
@@ -177,10 +192,7 @@ function appendTag(ulNode, tag, tagCount) {
 
 function updateTags(tags, deleteTags) {
     if (tags.trim() !== '') {
-        tagArray = tags.split(',');
-        for (i in tagArray) {
-            tagArray[i] = tagArray[i].trim().toLowerCase();
-        }
+        tagArray = tagsToArray(tags);
         
         if (deleteTags === undefined) deleteTags = false;
         
@@ -229,6 +241,15 @@ function updateTags(tags, deleteTags) {
     }
 }
 
+function tagsToArray(tags) {
+    var tagArray = tags.split(',');
+    for (var i = 0; i < tagArray.length; i++) {
+        tagArray[i] = tagArray[i].trim().toLowerCase();
+    }
+
+    return tagArray;
+}
+
 function toggleBookmarkForm(open) {
     var form = document.getElementById('bookmark-add'),
         fields = form.getElementsByClassName('form-field'),
@@ -259,4 +280,114 @@ function deleteBookmark(id, elem) {
             document.getElementById('csrf_token').value
         );
     }
+}
+
+function editBookmark(form) {
+    var title = form.title,
+        url = form.url,
+        tags = form.tags.trim(),
+        token = form.csrf_token.value,
+        bookmarkId = form.bookmark_id,
+        date = form.bookmark_date,
+        oldTags = form.old_tags.trim(),
+        data = '',
+        errorMessages = [];
+        
+    if (title.value.length < 1) {
+        errorMessages.push('Title cannot be blank.');
+    }
+    
+    if (url.value.length < 5 || 
+        !(url.value.indexOf('http://') !== -1 || url.value.indexOf('https://') !== -1)) {
+        errorMessages.push('Invalid url.');
+    }
+    
+    if (errorMessages.length > 0) {
+        showAlert(errorMessages.join(' '), 'error');
+        return;
+    }
+
+    data += 'title=' + title.value;
+    data += '&url=' + url.value;
+    data += '&tags=' + tags.value;
+
+    AJAXRequest(
+        'POST',
+        '/bookmark/update/' + bookmarkId,
+        data,
+        function(response) {
+            if (response.error) {
+                showAlert(response.message, 'error');
+            } else {
+                showAlert('Bookmark updated successfully.', 'success');
+                // Update tags
+                if (tags !== '') {
+                    if (oldTags === '') {
+                        // Add the new tags
+                        updateTags(tags);
+                    } else {
+                        // Remove those which where removed and 
+                        // add the new ones
+                        oldTagsArray = tagsToArray(oldTags);
+                        tagsArray = tagsToArray(tags);
+                        tagsToAdd = [];
+                        tagsToDelete = [];
+
+                        for (var i = 0; i < tagsArray.length; i++) {
+                            if (oldTagsArray.indexOf(tagsArray[i]) === -1) {
+                                tagsToAdd.push(tagsArray[i]);
+                            } else {
+                                oldTagsArray[oldTagsArray.indexOf(tagsArray[i])] = undefined;
+                            }
+                        }
+
+                        for (i = 0; i < oldTagsArray.length; i++) {
+                            if (oldTagsArray[i] !== undefined) {
+                                tagstoDelete.push(oldTagsArray[i]);
+                            }
+                        }
+
+                        updateTags(tagsToAdd.join(', '));
+                        updateTags(tagsToDelete.join(', '), true);
+                    }
+                } else if (oldTags !== '') {
+                    // Remove the tags
+                    updateTags(oldTags, true);
+                }
+                document.getElementById('bookmark_' + bookmarkId).
+                    innerHTML = renderBookmark(bookmarkId, title, url, tags, date);
+                closeEditBookmarkForm(form);
+            }
+        },
+        token
+    );
+}
+
+function openEditBookmarkForm(bookmark) {
+    var form = document.getElementById('bookmark-add');
+    toogleBookmarkForm(true);
+    form.onsubmit = 'editBookmark(this); return false;';
+    form.submit.value = 'Edit bookmark';
+    form.tags.value = getTagsFromBookmark(bookmark);
+    form.bookmark_id.value = bookmark.id.substring(bookmark.id.indexOf('_'));
+    form.old_tags.value = form.tags.value;
+    form.title.value = bookmark.getElementsByTagName('h3')[0].
+        getElementsByTagName('a')[0].innerHTML;
+    form.url.value = bookmark.getElementsByClassName('bookmark-url').
+        innerHTML.split(' ')[1];
+    dateElemContent = bookmark.getElementsByClassName('bookmark-date')[0].
+        innerHTML;
+    form.bookmark_date.value = dateElemContent.
+        substring(dateElemContent.indexOf(' '));
+    document.getElementById('toggle_edit_form').className = 'button-action';
+}
+
+function closeEditBookmarkForm(form) {
+    form.onsubmit = 'submitNewBookmark(this); return false;';
+    form.submit.value = 'Add bookmark';
+    form.tags.value = '';
+    form.title.value = '';
+    form.url.value = '';
+    document.getElementById('toggle_edit_form').className = 'button-action hidden';
+
 }

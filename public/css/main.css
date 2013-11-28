@@ -516,6 +516,23 @@ span.bookmark-tag + span.bookmark-tag::before {
     cursor: pointer;
 }
 
+.button-action {
+    background: transparent;
+    font-size: 1.0em;
+    font-family: 'Lato', sans-serif;
+    font-weight: 600;
+    border: none;
+    padding: 6px 9px;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-left: 6px;
+    color: #666;
+}
+
+.button-action span.form-icon {
+    font-size: 1.5em !important;
+}
+
 /* ==========================================================================
    Media Queries
    ========================================================================== */
