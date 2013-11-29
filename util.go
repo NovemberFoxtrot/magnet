@@ -5,7 +5,7 @@ import (
 	r "github.com/christopherhesse/rethinkgo"
 	s "github.com/gorilla/sessions"
 	h "net/http"
-    "net/url"
+	"net/url"
 	"time"
 )
 
@@ -61,10 +61,10 @@ func CsrfFailHandler(w h.ResponseWriter, r *h.Request) {
 }
 
 func IsValidUrl(urlStr string) bool {
-    parsedUrl, err := url.Parse(urlStr)
-    if err != nil {
-        return false;
-    }
-    
-    return parsedUrl.IsAbs()
+	parsedUrl, err := url.Parse(urlStr)
+	if err != nil {
+		return false
+	}
+
+	return parsedUrl.IsAbs()
 }

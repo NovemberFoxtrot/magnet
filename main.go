@@ -69,7 +69,7 @@ func main() {
 	// Bookmark-related routes
 	m.Get("/bookmarks/:page", AuthRequired, GetBookmarksHandler)
 	m.Post("/bookmark/new", AuthRequired, NewBookmarkHandler)
-	m.Put("/bookmark/update/:bookmark", AuthRequired, EditBookmarkHandler)
+	m.Post("/bookmark/update/:bookmark", AuthRequired, EditBookmarkHandler)
 	m.Delete("/bookmark/delete/:bookmark", AuthRequired, DeleteBookmarkHandler)
 
 	// Search

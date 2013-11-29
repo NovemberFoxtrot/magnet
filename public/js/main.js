@@ -153,10 +153,10 @@ function renderBookmark(bkId, title, url, tags, date) {
 
 	bookmarkHtml = ((!editing) ? '<article id="bookmark_' + bkId + '">' : '') + 
         '<div class="bookmark-actions">' +
-		'<a href="#" class="bookmark-edit" onclick="editBookmark(\'' + bkId + '\', this.parentNode.parentNode);"><span class="ion-levels"></span></a>' +
-		'<a href="#" class="bookmark-delete" onclick="deleteBookmark(\'' + bkId + '\', this.parentNode.parentNode);"><span class="ion-trash-b"></span></a>' +
+		'<a href="#" class="bookmark-edit" onclick="openEditBookmarkForm(this.parentNode.parentNode); return false;"><span class="ion-levels"></span></a>' +
+		'<a href="#" class="bookmark-delete" onclick="deleteBookmark(\'' + bkId + '\', this.parentNode.parentNode); return false;"><span class="ion-trash-b"></span></a>' +
 		'</div>' +
-		'<h3><a href="'+ url + '">' + title + '</a></h3>' +
+		'<h3><a href="'+ url + '" target="_blank">' + title + '</a></h3>' +
 		'<div class="bookmark-url"><span class="ion-link bookmark-icon"></span> ' + url + '</div> ' + 
         '<div class="bookmark-date"><span class="ion-clock bookmark-icon"></span> ' + date + '</div>' +
         '<div class="bookmark-tags"><span class="ion-ios7-pricetag bookmark-icon"></span>';
@@ -221,7 +221,6 @@ function updateTags(tags, deleteTags) {
                 
                 if (tagCount > 0) {
                     newTags.push([tag, tagCount]);
-                    console.log(newTags);
                 }
             }
             
@@ -313,7 +312,7 @@ function editBookmark(form) {
 
     AJAXRequest(
         'POST',
-        '/bookmark/update/' + bookmarkId,
+        '/bookmark/update/' + bookmarkId.value,
         data,
         function(response) {
             if (response.error) {
@@ -321,15 +320,15 @@ function editBookmark(form) {
             } else {
                 showAlert('Bookmark updated successfully.', 'success');
                 // Update tags
-                if (tags !== '') {
-                    if (oldTags === '') {
+                if (tags.value !== '') {
+                    if (oldTags.value === '') {
                         // Add the new tags
-                        updateTags(tags);
+                        updateTags(tags.value);
                     } else {
                         // Remove those which where removed and 
                         // add the new ones
-                        oldTagsArray = tagsToArray(oldTags);
-                        tagsArray = tagsToArray(tags);
+                        oldTagsArray = tagsToArray(oldTags.value);
+                        tagsArray = tagsToArray(tags.value);
                         tagsToAdd = [];
                         tagsToDelete = [];
 
@@ -343,7 +342,7 @@ function editBookmark(form) {
 
                         for (i = 0; i < oldTagsArray.length; i++) {
                             if (oldTagsArray[i] !== undefined) {
-                                tagstoDelete.push(oldTagsArray[i]);
+                                tagsToDelete.push(oldTagsArray[i]);
                             }
                         }
 
@@ -352,11 +351,13 @@ function editBookmark(form) {
                     }
                 } else if (oldTags !== '') {
                     // Remove the tags
-                    updateTags(oldTags, true);
+                    updateTags(oldTags.value, true);
                 }
-                document.getElementById('bookmark_' + bookmarkId).
-                    innerHTML = renderBookmark(bookmarkId, title, url, tags, date);
+                currBk = document.getElementById('bookmark_' + bookmarkId.value);
+                currBk.innerHTML = renderBookmark(bookmarkId.value, title.value, url.value, tags.value, date.value);
                 closeEditBookmarkForm(form);
+                var viewportOffset = currBk.getBoundingClientRect();
+                window.scrollTo(0, viewportOffset.top);
             }
         },
         token
@@ -365,25 +366,32 @@ function editBookmark(form) {
 
 function openEditBookmarkForm(bookmark) {
     var form = document.getElementById('bookmark-add');
-    toogleBookmarkForm(true);
-    form.onsubmit = 'editBookmark(this); return false;';
+    toggleBookmarkForm(true);
+    form.onsubmit = function() {
+        editBookmark(form);
+        return false;
+    }
     form.submit.value = 'Edit bookmark';
     form.tags.value = getTagsFromBookmark(bookmark);
-    form.bookmark_id.value = bookmark.id.substring(bookmark.id.indexOf('_'));
+    form.bookmark_id.value = bookmark.id.substring(bookmark.id.indexOf('_') + 1);
     form.old_tags.value = form.tags.value;
     form.title.value = bookmark.getElementsByTagName('h3')[0].
         getElementsByTagName('a')[0].innerHTML;
-    form.url.value = bookmark.getElementsByClassName('bookmark-url').
-        innerHTML.split(' ')[1];
+    form.url.value = bookmark.getElementsByClassName('bookmark-url')[0].
+        innerHTML.split(' ')[3];
     dateElemContent = bookmark.getElementsByClassName('bookmark-date')[0].
         innerHTML;
     form.bookmark_date.value = dateElemContent.
-        substring(dateElemContent.indexOf(' '));
+        substring(dateElemContent.lastIndexOf('>') + 2);
     document.getElementById('toggle_edit_form').className = 'button-action';
+    window.scrollTo(0, 0);
 }
 
 function closeEditBookmarkForm(form) {
-    form.onsubmit = 'submitNewBookmark(this); return false;';
+    form.onsubmit = function() {
+        submitNewBookmark(form);
+        return false;
+    }
     form.submit.value = 'Add bookmark';
     form.tags.value = '';
     form.title.value = '';

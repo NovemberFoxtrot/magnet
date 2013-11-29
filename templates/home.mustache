@@ -13,9 +13,10 @@
 			<input type="hidden" name="csrf_token" id="csrf_token" value="{{csrf_token}}" />
 			<input type="hidden" name="bookmark_date" id="bookmark_date" value="" />
 			<input type="hidden" name="old_tags" id="old_tags" value="" />
+            <input type="hidden" name="bookmark_id" id="bookmark_id" value="" />
 			<div class="form-buttons">
 				<input type="submit" name="submit" id="submit-add-bookmark" value="Add bookmark" />
-				<button id="toggle_edit_form" class="button-action hidden"><span class="ion-close form-icon"></span>Discard changes</button>
+				<button id="toggle_edit_form" class="button-action hidden" onclick="closeEditBookmarkForm(this.parentNode.parentNode); return false;"><span class="ion-close form-icon"></span>Discard changes</button>
 			</div>
 		</form>
 	</div>
@@ -23,10 +24,10 @@
 		{{#bookmarks}}
 		<article id="bookmark_{{Id}}">
 			<div class="bookmark-actions">
-				<a href="#" class="bookmark-edit" onclick="editBookmark('{{Id}}', this.parentNode.parentNode);"><span class="ion-levels"></span></a>
-				<a href="#" class="bookmark-delete" onclick="deleteBookmark('{{Id}}', this.parentNode.parentNode);"><span class="ion-trash-b"></span></a>
+				<a href="#" class="bookmark-edit" onclick="openEditBookmarkForm(this.parentNode.parentNode); return false;"><span class="ion-levels"></span></a>
+				<a href="#" class="bookmark-delete" onclick="deleteBookmark('{{Id}}', this.parentNode.parentNode); return false;"><span class="ion-trash-b"></span></a>
 			</div>
-			<h3><a href="{{Url}}">{{Title}}</a></h3>
+			<h3><a href="{{Url}}" target="_blank">{{Title}}</a></h3>
 			<div class="bookmark-url"><span class="ion-link bookmark-icon"></span> {{Url}}</div> <div class="bookmark-date"><span class="ion-clock bookmark-icon"></span> {{Date}}</div>
             <div class="bookmark-tags">
                 <span class="ion-ios7-pricetag bookmark-icon"></span>
