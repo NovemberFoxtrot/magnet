@@ -9,11 +9,12 @@ import (
 	"time"
 )
 
-func JsonDataResponse(status int, data interface{}, r *h.Request, w h.ResponseWriter) {
+func JsonDataResponse(status int, err bool, data interface{}, r *h.Request, w h.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	resp := make(map[string]interface{})
 	resp["status"] = status
 	resp["data"] = data
+    resp["error"] = err
 	jsonResp, _ := json.Marshal(resp)
 	w.WriteHeader(status)
 	w.Write(jsonResp)

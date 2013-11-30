@@ -2,6 +2,10 @@ package main
 
 import (
 	r "github.com/christopherhesse/rethinkgo"
+	m "github.com/codegangsta/martini"
+	s "github.com/gorilla/sessions"
+	h "net/http"
+    "strconv"
 )
 
 type Tag struct {
@@ -46,7 +50,26 @@ func GetTags(dbSession *r.Session, userId string) []Tag {
 	return tags
 }
 
-// not implemented yet
-func GetTagHandler() {
+func GetTagHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
+	_, userId := GetUserData(cs, req)
+	var response []interface{}
+    page, _ := strconv.ParseInt(params["page"], 10, 16)
+    
+	err := r.Db("magnet").
+		Table("bookmarks").
+		Filter(r.Row.Attr("User").
+		Eq(userId).
+		And(r.Row.Attr("Tags").
+		Contains(params["tag"]))).
+		OrderBy(r.Desc("Created")).
+		Skip(50 * page).
+		Limit(50).
+		Run(dbSession).
+		All(&response)
 
+	if err != nil {
+		WriteJsonResponse(200, true, "Error getting bookmarks for tag " + params["tag"], req, w)
+	} else {
+		JsonDataResponse(200, false, response, req, w)
+	}
 }

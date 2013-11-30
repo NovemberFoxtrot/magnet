@@ -140,8 +140,8 @@ function showAlert(msg, htmlClass) {
     }, 2000);
 }
 
-function renderBookmark(bkId, title, url, tags, date) {
-    var editing = true;
+function renderBookmark(bkId, title, url, tags, date, forceComplete) {
+    var editing = true && !forceComplete;
     if (date === undefined) {
         date = 'Just now';
         editing = false;
@@ -397,5 +397,130 @@ function closeEditBookmarkForm(form) {
     form.title.value = '';
     form.url.value = '';
     document.getElementById('toggle_edit_form').className = 'button-action hidden';
+}
 
+function getBookmarksForTag(tag) {
+    var form = document.getElementById('bookmark-add'),
+        token = form.csrf_token.value,
+        list = document.getElementById('list-bookmarks'),
+        i = 0;
+
+    AJAXRequest(
+        'GET',
+        '/tag/' + tag + '/0',
+        '',
+        function(response) {
+            if (response.error) {
+                showAlert(response.message, 'error');
+            } else {
+                data = response.data;
+                list.className = 'browsing_tag_' + tag;
+                if (data.length > 0) {
+                    list.innerHTML = '';
+                    for (i = 0; i < data.length; i++) {
+                        list.innerHTML += renderBookmark(data[i].id,
+                                                        data[i].Title,
+                                                        data[i].Url,
+                                                        data[i].Tags.join(', '),
+                                                        data[i].Date,
+                                                        true);
+                    }
+                    
+                    document.getElementById('back-index').className = '';
+                    
+                    if (data.length == 50) {
+                        // Show more button
+                    }
+                } else {
+                    showAlert('There are no bookmarks for tag "' + tag + '"', 'info')
+                }
+            }
+        },
+        token
+    );
+}
+
+function searchBookmarks(query) {
+    var form = document.getElementById('bookmark-add'),
+        token = form.csrf_token.value,
+        list = document.getElementById('list-bookmarks'),
+        i = 0;
+
+    AJAXRequest(
+        'POST',
+        '/search/0',
+        'query=' + query,
+        function(response) {
+            if (response.error) {
+                showAlert(response.message, 'error');
+            } else {
+                data = response.data;
+                list.className = 'searching_' + btoa(query);
+                if (data.length > 0) {
+                    list.innerHTML = '';
+                    for (i = 0; i < data.length; i++) {
+                        list.innerHTML += renderBookmark(data[i].id,
+                                                        data[i].Title,
+                                                        data[i].Url,
+                                                        data[i].Tags.join(', '),
+                                                        data[i].Date,
+                                                        true);
+                    }
+                    
+                    document.getElementById('back-index').className = '';
+                    
+                    if (data.length == 50) {
+                        // Show more button
+                    }
+                } else {
+                    showAlert('There are no bookmarks for tag "' + tag + '"', 'info')
+                }
+            }
+        },
+        token
+    );
+}
+
+function browseAll() {
+    var form = document.getElementById('bookmark-add'),
+        token = form.csrf_token.value,
+        list = document.getElementById('list-bookmarks'),
+        i = 0;
+
+    AJAXRequest(
+        'GET',
+        '/bookmarks/0',
+        '',
+        function(response) {
+            if (response.error) {
+                showAlert(response.message, 'error');
+            } else {
+                data = response.data;
+                if (list.className.indexOf('searching_') !== -1) {
+                    document.getElementById('search_query').value = '';
+                }
+                list.className = '';
+                if (data.length > 0) {
+                    list.innerHTML = '';
+                    for (i = 0; i < data.length; i++) {
+                        list.innerHTML += renderBookmark(data[i].id,
+                                                        data[i].Title,
+                                                        data[i].Url,
+                                                        data[i].Tags.join(', '),
+                                                        data[i].Date,
+                                                        true);
+                    }
+                    
+                    document.getElementById('back-index').className = 'hidden';
+                    
+                    if (data.length == 50) {
+                        // Show more button
+                    }
+                } else {
+                    showAlert('There are no bookmarks to display.', 'info')
+                }
+            }
+        },
+        token
+    );
 }

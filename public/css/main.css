@@ -318,6 +318,17 @@ aside {
     line-height: 1.7em;
 }
 
+#back-index {
+    text-align: center;
+    padding-top: 15px;
+}
+
+#back-index a {
+    color: #FFF;
+    text-decoration: none;
+    font-size: 1.2em;
+}
+
 #info {
     text-align: center;
     border-top: 1px solid rgba(0, 0, 0, 0.1);

@@ -64,7 +64,7 @@ func main() {
 	m.Use(martini.Static("public"))
 
 	// Tag-related routes
-	m.Get("/tag/:tag", AuthRequired, GetTagHandler)
+	m.Get("/tag/:tag/:page", AuthRequired, GetTagHandler)
 
 	// Bookmark-related routes
 	m.Get("/bookmarks/:page", AuthRequired, GetBookmarksHandler)
@@ -73,7 +73,7 @@ func main() {
 	m.Delete("/bookmark/delete/:bookmark", AuthRequired, DeleteBookmarkHandler)
 
 	// Search
-	//m.Post("/search", AuthRequired, SearchHandler)
+	m.Post("/search/:page", AuthRequired, SearchHandler)
 
 	// User-related routes
 	m.Post("/login", LoginPostHandler)

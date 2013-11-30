@@ -50,7 +50,7 @@ func GetBookmarksHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs
 	_, userId := GetUserData(cs, req)
 	page, _ := strconv.ParseInt(params["page"], 10, 16)
 	bookmarks := GetBookmarks(page, dbSession, userId)
-	JsonDataResponse(200, bookmarks, req, w)
+	JsonDataResponse(200, false, bookmarks, req, w)
 }
 
 func IndexHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
@@ -162,5 +162,30 @@ func DeleteBookmarkHandler(params m.Params, req *h.Request, w h.ResponseWriter, 
 		} else {
 			WriteJsonResponse(200, true, "Error deleting bookmark.", req, w)
 		}
+	}
+}
+
+func SearchHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
+	_, userId := GetUserData(cs, req)
+	var response []interface{}
+    page, _ := strconv.ParseInt(params["page"], 10, 16)
+    query := req.PostFormValue("query")
+    
+	err := r.Db("magnet").
+		Table("bookmarks").
+		Filter(r.Row.Attr("Title").
+        Match("(?i)" + query).
+        And(r.Row.Attr("User").
+		Eq(userId))).
+		OrderBy(r.Desc("Created")).
+		Skip(50 * page).
+		Limit(50).
+		Run(dbSession).
+		All(&response)
+
+	if err != nil {
+		WriteJsonResponse(200, true, "Error retrieving bookmarks", req, w)
+	} else {
+		JsonDataResponse(200, false, response, req, w)
 	}
 }

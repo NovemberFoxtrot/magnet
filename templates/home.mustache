@@ -48,13 +48,16 @@
 <aside>
 	<div id="aside-head"><h1><span class="ion-magnet"></span></h1></div>
 
-	<form id="search-form" onsubmit="submitSearchForm(); return false;">
-		<input type="text" name="search-query" id="search-query" placeholder="Search..." />
+	<form id="search-form" onsubmit="searchBookmarks(this.search_query.value); return false;">
+		<input type="text" name="search_query" id="search_query" placeholder="Search..." />
 	</form>
+    
+    <div id="back-index" class="hidden">
+        <a href="#" onclick="browseAll(); return false;"><span class="ion-refresh info-icon"></span> Browse all</a>
+    </div>
 
 	<div id="tags">
 		<h3>Tags</h3>
-
 		<ul>
 		{{#tags}}
         <li class="clickable" onclick="getBookmarksForTag('{{Name}}');">{{Name}} <span class="tag-count">({{Count}})</span></li>
