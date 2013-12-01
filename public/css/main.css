@@ -233,7 +233,6 @@ body {
 #left-side {
     float: left;
     background: #FFF;
-    min-height: 100%;
     width: 70%;
     color: #444;
     text-shadow: none;
@@ -542,6 +541,35 @@ span.bookmark-tag + span.bookmark-tag::before {
 
 .button-action span.form-icon {
     font-size: 1.5em !important;
+}
+
+#load-more {
+    padding: 25px;
+    text-align: center;
+}
+
+#load-more button {
+    font-family: 'Lato', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #666;
+    padding: 10px 50px;
+    border: 1px solid #BBB;
+    border-radius: 5px;
+    background: #FFF;
+    -webkit-transition: all 200ms ease-in;
+    transition: all 200ms ease-in;
+}
+
+#load-more button:hover {
+    border-color: rgb(11, 121, 229);
+    color: rgb(11, 121, 229);
+}
+
+#load-more button:active {
+    border-color: rgb(11, 121, 229);
+    color: #FFF;
+    background: rgb(11, 121, 229);
 }
 
 /* ==========================================================================

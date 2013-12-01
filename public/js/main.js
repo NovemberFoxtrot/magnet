@@ -1,3 +1,12 @@
+var heightCallback = function() {
+    var docHeight = document.body.scrollHeight;
+    document.getElementById('left-side').style.height = docHeight + 'px';
+    document.getElementById('left-side').style.minHeight = docHeight + 'px';
+};
+
+window.onload = heightCallback;
+window.onresize = heightCallback;
+
 function accessFormChangeMode() {
     var submit = document.getElementById('submit-button');
     var modeChanger = document.getElementById('no-account');
@@ -429,7 +438,12 @@ function getBookmarksForTag(tag) {
                     document.getElementById('back-index').className = '';
                     
                     if (data.length == 50) {
-                        // Show more button
+                        document.getElementById('load-more').onclick = function() {
+                            loadMore(1);
+                            return false;
+                        };
+                    } else {
+                        document.getElementById('load-more').style.display = 'none';
                     }
                 } else {
                     showAlert('There are no bookmarks for tag "' + tag + '"', 'info')
@@ -470,7 +484,12 @@ function searchBookmarks(query) {
                     document.getElementById('back-index').className = '';
                     
                     if (data.length == 50) {
-                        // Show more button
+                        document.getElementById('load-more').onclick = function() {
+                            loadMore(1);
+                            return false;
+                        };
+                    } else {
+                        document.getElementById('load-more').style.display = 'none';
                     }
                 } else {
                     showAlert('There are no bookmarks for tag "' + tag + '"', 'info')
@@ -514,7 +533,72 @@ function browseAll() {
                     document.getElementById('back-index').className = 'hidden';
                     
                     if (data.length == 50) {
-                        // Show more button
+                        document.getElementById('load-more').onclick = function() {
+                            loadMore(1);
+                            return false;
+                        };
+                    } else {
+                        document.getElementById('load-more').style.display = 'none';
+                    }
+                } else {
+                    showAlert('There are no bookmarks to display.', 'info')
+                }
+            }
+        },
+        token
+    );
+}
+
+function loadMore(page) {
+    var form = document.getElementById('bookmark-add'),
+        token = form.csrf_token.value,
+        list = document.getElementById('list-bookmarks'),
+        method,
+        queryData,
+        requestUrl,
+        i = 0;
+        
+    if (list.className.indexOf('browsing_tag_') !== -1) {
+        method = 'GET';
+        requestUrl = '/tag/' + list.className.substring(list.className.indexOf('tag_') + 4) + '/' + page;
+        queryData = '';
+    } else if (list.className.indexOf('searching_') !== -1) {
+        method = 'POST';
+        requestUrl = '/search/' + page;
+        queryData = 'query=' + atob(list.className.substring(list.className.indexOf('_') + 1));
+    } else {
+        method = 'GET';
+        requestUrl = '/bookmarks/' + page;
+        queryData = '';
+    }
+        
+    AJAXRequest(
+        method,
+        requestUrl,
+        queryData,
+        function(response) {
+            if (response.error) {
+                showAlert(response.message, 'error');
+            } else {
+                data = response.data;
+                console.log(data);
+                if (data.length > 0) {
+                    for (i = 0; i < data.length; i++) {
+                        list.innerHTML += renderBookmark(data[i].id,
+                                                        data[i].Title,
+                                                        data[i].Url,
+                                                        data[i].Tags.join(', '),
+                                                        data[i].Date,
+                                                        true);
+                    }
+                    
+                    if (data.length == 50) {
+                        document.getElementById('load-more').onclick = function() {
+                            loadMore(page + 1);
+                            return false;
+                        };
+                    } else {
+                        document.getElementById('load-more').style.display = 'none';
                     }
                 } else {
                     showAlert('There are no bookmarks to display.', 'info')

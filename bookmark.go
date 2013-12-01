@@ -62,6 +62,7 @@ func IndexHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSessi
 		"tags":       GetTags(dbSession, userId),
 		"username":   username,
 	}
+    context["load_more"] = len(context["bookmarks"].([]Bookmark)) == 2
 	w.Write([]byte(mustache.RenderFileInLayout("templates/home.mustache", "templates/base.mustache", context)))
 }
 
