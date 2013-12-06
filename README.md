@@ -5,7 +5,9 @@ Magnet is a tiny self-hosted bookmarks management tool written in Go(lang).
 
 Works on Go 1.1 and Go 1.2.
 
-![alt text](https://github.com/mvader/magnet/raw/master/magnet.png "Magnet screenshot")
+You can see a live instance at [gomagnet.pw](http://gomagnet.pw/).
+
+![alt text](https://github.com/mvader/magnet/raw/master/magnet.png "Magnet screenshot").
 
 Requisites
 -------
