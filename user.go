@@ -19,8 +19,8 @@ type User struct {
 }
 
 type Session struct {
-	UserId  string `json:UserId`
-	Expires int64  `json:Expires`
+	UserId  string `json:"UserId"`
+	Expires int64  `json:"Expires"`
 }
 
 func GetUserData(cs *s.CookieStore, req *h.Request) (string, string) {

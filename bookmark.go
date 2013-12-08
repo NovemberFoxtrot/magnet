@@ -62,7 +62,7 @@ func IndexHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSessi
 		"tags":       GetTags(dbSession, userId),
 		"username":   username,
 	}
-    context["load_more"] = len(context["bookmarks"].([]Bookmark)) == 2
+	context["load_more"] = len(context["bookmarks"].([]Bookmark)) == 2
 	w.Write([]byte(mustache.RenderFileInLayout("templates/home.mustache", "templates/base.mustache", context)))
 }
 
@@ -169,14 +169,14 @@ func DeleteBookmarkHandler(params m.Params, req *h.Request, w h.ResponseWriter, 
 func SearchHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
 	_, userId := GetUserData(cs, req)
 	var response []interface{}
-    page, _ := strconv.ParseInt(params["page"], 10, 16)
-    query := req.PostFormValue("query")
-    
+	page, _ := strconv.ParseInt(params["page"], 10, 16)
+	query := req.PostFormValue("query")
+
 	err := r.Db("magnet").
 		Table("bookmarks").
 		Filter(r.Row.Attr("Title").
-        Match("(?i)" + query).
-        And(r.Row.Attr("User").
+		Match("(?i)" + query).
+		And(r.Row.Attr("User").
 		Eq(userId))).
 		OrderBy(r.Desc("Created")).
 		Skip(50 * page).
