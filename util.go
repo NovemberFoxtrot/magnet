@@ -14,7 +14,7 @@ func JsonDataResponse(status int, err bool, data interface{}, r *h.Request, w h.
 	resp := make(map[string]interface{})
 	resp["status"] = status
 	resp["data"] = data
-    resp["error"] = err
+	resp["error"] = err
 	jsonResp, _ := json.Marshal(resp)
 	w.WriteHeader(status)
 	w.Write(jsonResp)

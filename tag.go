@@ -5,7 +5,7 @@ import (
 	m "github.com/codegangsta/martini"
 	s "github.com/gorilla/sessions"
 	h "net/http"
-    "strconv"
+	"strconv"
 )
 
 type Tag struct {
@@ -53,8 +53,8 @@ func GetTags(dbSession *r.Session, userId string) []Tag {
 func GetTagHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
 	_, userId := GetUserData(cs, req)
 	var response []interface{}
-    page, _ := strconv.ParseInt(params["page"], 10, 16)
-    
+	page, _ := strconv.ParseInt(params["page"], 10, 16)
+
 	err := r.Db("magnet").
 		Table("bookmarks").
 		Filter(r.Row.Attr("User").
@@ -68,7 +68,7 @@ func GetTagHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.Co
 		All(&response)
 
 	if err != nil {
-		WriteJsonResponse(200, true, "Error getting bookmarks for tag " + params["tag"], req, w)
+		WriteJsonResponse(200, true, "Error getting bookmarks for tag "+params["tag"], req, w)
 	} else {
 		JsonDataResponse(200, false, response, req, w)
 	}
