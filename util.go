@@ -9,7 +9,8 @@ import (
 	"time"
 )
 
-func JsonDataResponse(status int, err bool, data interface{}, r *h.Request, w h.ResponseWriter) {
+// JSONDataResponse writes JSON data to ResponseWriter
+func JSONDataResponse(status int, err bool, data interface{}, r *h.Request, w h.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	resp := make(map[string]interface{})
 	resp["status"] = status
@@ -20,7 +21,8 @@ func JsonDataResponse(status int, err bool, data interface{}, r *h.Request, w h.
 	w.Write(jsonResp)
 }
 
-func WriteJsonResponse(status int, error bool, message string, r *h.Request, w h.ResponseWriter) {
+// WriteJSONResponse writes JSON to the ResponseWriter
+func WriteJSONResponse(status int, error bool, message string, r *h.Request, w h.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	resp := make(map[string]interface{})
 	resp["status"] = status
@@ -31,10 +33,11 @@ func WriteJsonResponse(status int, error bool, message string, r *h.Request, w h
 	w.Write(jsonResp)
 }
 
-func GetUserId(cs *s.CookieStore, req *h.Request, dbSession *r.Session) string {
+// GetUserID fetches userID from rethinkdb
+func GetUserID(cs *s.CookieStore, req *h.Request, dbSession *r.Session) string {
 	session, _ := cs.Get(req, "magnet_session")
 	var response map[string]interface{}
-	userId := ""
+	userID := ""
 	// Get user session if it hasn't expired yet
 	err := r.Db("magnet").
 		Table("sessions").
@@ -44,28 +47,31 @@ func GetUserId(cs *s.CookieStore, req *h.Request, dbSession *r.Session) string {
 
 	if err == nil && len(response) > 0 {
 		if int64(response["Expires"].(float64)) > time.Now().Unix() {
-			userId = response["UserId"].(string)
+			userID = response["UserId"].(string)
 		}
 	}
 
-	return userId
+	return userID
 }
 
+// AuthRequired checks user session
 func AuthRequired(cs *s.CookieStore, req *h.Request, w h.ResponseWriter, dbSession *r.Session) {
-	if GetUserId(cs, req, dbSession) == "" {
-		WriteJsonResponse(401, true, "User is not logged in.", req, w)
+	if GetUserID(cs, req, dbSession) == "" {
+		WriteJSONResponse(401, true, "User is not logged in.", req, w)
 	}
 }
 
+// CsrfFailHandler writes invalid token response
 func CsrfFailHandler(w h.ResponseWriter, r *h.Request) {
-	WriteJsonResponse(200, true, "Provided token is not valid.", r, w)
+	WriteJSONResponse(200, true, "Provided token is not valid.", r, w)
 }
 
-func IsValidUrl(urlStr string) bool {
-	parsedUrl, err := url.Parse(urlStr)
+// IsValidURL checks if URL can be parsed
+func IsValidURL(urlStr string) bool {
+	parsedURL, err := url.Parse(urlStr)
 	if err != nil {
 		return false
 	}
 
-	return parsedUrl.IsAbs()
+	return parsedURL.IsAbs()
 }

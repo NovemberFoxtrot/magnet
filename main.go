@@ -83,7 +83,7 @@ func main() {
 
 	// Home
 	m.Get("/", func(cs *s.CookieStore, req *h.Request, w h.ResponseWriter, dbSession *r.Session) {
-		if GetUserId(cs, req, dbSession) == "" {
+		if GetUserID(cs, req, dbSession) == "" {
 			LoginHandler(req, w)
 		}
 	}, IndexHandler)
