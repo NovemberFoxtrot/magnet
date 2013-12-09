@@ -12,23 +12,25 @@ import (
 	"time"
 )
 
+// Bookmark for JSON schema
 type Bookmark struct {
-	Id      string `json:"id"`
+	ID      string `json:"id"`
 	Title   string
 	Tags    []string
-	Url     string
+	URL     string
 	Created float64
 	User    string
 	Date    string
 }
 
-func GetBookmarks(page int64, dbSession *r.Session, userId string) []Bookmark {
+// GetBookmarks fetches bookmarks from rethinkdb
+func GetBookmarks(page int64, dbSession *r.Session, userID string) []Bookmark {
 	var bookmarks []Bookmark
 
 	err := r.Db("magnet").
 		Table("bookmarks").
 		Filter(r.Row.Attr("User").
-		Eq(userId)).
+		Eq(userID)).
 		OrderBy(r.Desc("Created")).
 		Skip(50 * page).
 		Limit(50).
@@ -36,7 +38,7 @@ func GetBookmarks(page int64, dbSession *r.Session, userId string) []Bookmark {
 		All(&bookmarks)
 
 	if err == nil {
-		for i, _ := range bookmarks {
+		for i := range bookmarks {
 			if len(bookmarks[i].Tags) < 1 {
 				bookmarks[i].Tags = []string{"No tags"}
 			}
@@ -46,36 +48,39 @@ func GetBookmarks(page int64, dbSession *r.Session, userId string) []Bookmark {
 	return bookmarks
 }
 
+// GetBookmarksHandler writes bookmarks to JSON data
 func GetBookmarksHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
-	_, userId := GetUserData(cs, req)
+	_, userID := GetUserData(cs, req)
 	page, _ := strconv.ParseInt(params["page"], 10, 16)
-	bookmarks := GetBookmarks(page, dbSession, userId)
-	JsonDataResponse(200, false, bookmarks, req, w)
+	bookmarks := GetBookmarks(page, dbSession, userID)
+	JSONDataResponse(200, false, bookmarks, req, w)
 }
 
+// IndexHandler writes out templates
 func IndexHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
-	username, userId := GetUserData(cs, req)
+	username, userID := GetUserData(cs, req)
 	context := map[string]interface{}{
 		"title":      "Magnet",
 		"csrf_token": nosurf.Token(req),
-		"bookmarks":  GetBookmarks(0, dbSession, userId),
-		"tags":       GetTags(dbSession, userId),
+		"bookmarks":  GetBookmarks(0, dbSession, userID),
+		"tags":       GetTags(dbSession, userID),
 		"username":   username,
 	}
 	context["load_more"] = len(context["bookmarks"].([]Bookmark)) == 2
 	w.Write([]byte(mustache.RenderFileInLayout("templates/home.mustache", "templates/base.mustache", context)))
 }
 
+// NewBookmarkHandler writes out new bookmark JSON response
 func NewBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
 	// We use a map instead of Bookmark because id would be ""
 	bookmark := make(map[string]interface{})
 	bookmark["Title"] = req.PostFormValue("title")
 	bookmark["Url"] = req.PostFormValue("url")
 
-	if !IsValidUrl(bookmark["Url"].(string)) || len(bookmark["Title"].(string)) < 1 {
-		WriteJsonResponse(200, true, "The url is not valid or the title is empty.", req, w)
+	if !IsValidURL(bookmark["Url"].(string)) || len(bookmark["Title"].(string)) < 1 {
+		WriteJSONResponse(200, true, "The url is not valid or the title is empty.", req, w)
 	} else {
-		_, userId := GetUserData(cs, req)
+		_, userID := GetUserData(cs, req)
 		if req.PostFormValue("tags") != "" {
 			bookmark["Tags"] = strings.Split(req.PostFormValue("tags"), ",")
 			for i, v := range bookmark["Tags"].([]string) {
@@ -84,7 +89,7 @@ func NewBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, d
 		}
 		bookmark["Created"] = float64(time.Now().Unix())
 		bookmark["Date"] = time.Unix(int64(bookmark["Created"].(float64)), 0).Format("Jan 2, 2006 at 3:04pm")
-		bookmark["User"] = userId
+		bookmark["User"] = userID
 
 		var response r.WriteResponse
 		r.Db("magnet").
@@ -94,23 +99,24 @@ func NewBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, d
 			One(&response)
 
 		if response.Inserted > 0 {
-			WriteJsonResponse(200, false, response.GeneratedKeys[0], req, w)
+			WriteJSONResponse(200, false, response.GeneratedKeys[0], req, w)
 		} else {
-			WriteJsonResponse(200, true, "Error inserting bookmark.", req, w)
+			WriteJSONResponse(200, true, "Error inserting bookmark.", req, w)
 		}
 	}
 }
 
+// EditBookmarkHandler writes out response to editing a URL
 func EditBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session, params m.Params) {
 	// We use a map instead of Bookmark because id would be ""
 	bookmark := make(map[string]interface{})
 	bookmark["Title"] = req.PostFormValue("title")
 	bookmark["Url"] = req.PostFormValue("url")
 
-	if !IsValidUrl(bookmark["Url"].(string)) || len(bookmark["Title"].(string)) < 1 {
-		WriteJsonResponse(200, true, "The url is not valid or the title is empty.", req, w)
+	if !IsValidURL(bookmark["Url"].(string)) || len(bookmark["Title"].(string)) < 1 {
+		WriteJSONResponse(200, true, "The url is not valid or the title is empty.", req, w)
 	} else {
-		_, userId := GetUserData(cs, req)
+		_, userID := GetUserData(cs, req)
 		if req.PostFormValue("tags") != "" {
 			bookmark["Tags"] = strings.Split(req.PostFormValue("tags"), ",")
 			for i, v := range bookmark["Tags"].([]string) {
@@ -122,7 +128,7 @@ func EditBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, 
 		err := r.Db("magnet").
 			Table("bookmarks").
 			Filter(r.Row.Attr("User").
-			Eq(userId).
+			Eq(userID).
 			And(r.Row.Attr("id").
 			Eq(params["bookmark"]))).
 			Update(bookmark).
@@ -130,25 +136,26 @@ func EditBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, 
 			One(&response)
 
 		if err != nil {
-			WriteJsonResponse(200, true, "Error deleting bookmark.", req, w)
+			WriteJSONResponse(200, true, "Error deleting bookmark.", req, w)
 		} else {
 			if response.Updated > 0 || response.Unchanged > 0 || response.Replaced > 0 {
-				WriteJsonResponse(200, false, "Bookmark updated successfully.", req, w)
+				WriteJSONResponse(200, false, "Bookmark updated successfully.", req, w)
 			} else {
-				WriteJsonResponse(200, true, "Error updating bookmark.", req, w)
+				WriteJSONResponse(200, true, "Error updating bookmark.", req, w)
 			}
 		}
 	}
 }
 
+// DeleteBookmarkHandler writes out response to deleting a bookmark
 func DeleteBookmarkHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
-	_, userId := GetUserData(cs, req)
+	_, userID := GetUserData(cs, req)
 	var response r.WriteResponse
 
 	err := r.Db("magnet").
 		Table("bookmarks").
 		Filter(r.Row.Attr("User").
-		Eq(userId).
+		Eq(userID).
 		And(r.Row.Attr("id").
 		Eq(params["bookmark"]))).
 		Delete().
@@ -156,18 +163,19 @@ func DeleteBookmarkHandler(params m.Params, req *h.Request, w h.ResponseWriter, 
 		One(&response)
 
 	if err != nil {
-		WriteJsonResponse(200, true, "Error deleting bookmark.", req, w)
+		WriteJSONResponse(200, true, "Error deleting bookmark.", req, w)
 	} else {
 		if response.Deleted > 0 {
-			WriteJsonResponse(200, false, "Bookmark deleted successfully.", req, w)
+			WriteJSONResponse(200, false, "Bookmark deleted successfully.", req, w)
 		} else {
-			WriteJsonResponse(200, true, "Error deleting bookmark.", req, w)
+			WriteJSONResponse(200, true, "Error deleting bookmark.", req, w)
 		}
 	}
 }
 
+// SearchHandler writes out response when searching for a URL
 func SearchHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
-	_, userId := GetUserData(cs, req)
+	_, userID := GetUserData(cs, req)
 	var response []interface{}
 	page, _ := strconv.ParseInt(params["page"], 10, 16)
 	query := req.PostFormValue("query")
@@ -177,7 +185,7 @@ func SearchHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.Co
 		Filter(r.Row.Attr("Title").
 		Match("(?i)" + query).
 		And(r.Row.Attr("User").
-		Eq(userId))).
+		Eq(userID))).
 		OrderBy(r.Desc("Created")).
 		Skip(50 * page).
 		Limit(50).
@@ -185,8 +193,8 @@ func SearchHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.Co
 		All(&response)
 
 	if err != nil {
-		WriteJsonResponse(200, true, "Error retrieving bookmarks", req, w)
+		WriteJSONResponse(200, true, "Error retrieving bookmarks", req, w)
 	} else {
-		JsonDataResponse(200, false, response, req, w)
+		JSONDataResponse(200, false, response, req, w)
 	}
 }

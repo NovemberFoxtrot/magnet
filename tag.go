@@ -8,12 +8,14 @@ import (
 	"strconv"
 )
 
+// Tag for JSON
 type Tag struct {
 	Name  string
 	Count int
 }
 
-func GetTags(dbSession *r.Session, userId string) []Tag {
+// GetTags fetches tags from rethinkdb
+func GetTags(dbSession *r.Session, userID string) []Tag {
 	var response []interface{}
 	tagMap := make(map[string]int)
 	var tags []Tag
@@ -21,7 +23,7 @@ func GetTags(dbSession *r.Session, userId string) []Tag {
 	err := r.Db("magnet").
 		Table("bookmarks").
 		Filter(r.Row.Attr("User").
-		Eq(userId)).
+		Eq(userID)).
 		WithFields("Tags").
 		Run(dbSession).
 		All(&response)
@@ -50,15 +52,16 @@ func GetTags(dbSession *r.Session, userId string) []Tag {
 	return tags
 }
 
+// GetTagHandler fetches books for a given tag
 func GetTagHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
-	_, userId := GetUserData(cs, req)
+	_, userID := GetUserData(cs, req)
 	var response []interface{}
 	page, _ := strconv.ParseInt(params["page"], 10, 16)
 
 	err := r.Db("magnet").
 		Table("bookmarks").
 		Filter(r.Row.Attr("User").
-		Eq(userId).
+		Eq(userID).
 		And(r.Row.Attr("Tags").
 		Contains(params["tag"]))).
 		OrderBy(r.Desc("Created")).
@@ -68,8 +71,8 @@ func GetTagHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.Co
 		All(&response)
 
 	if err != nil {
-		WriteJsonResponse(200, true, "Error getting bookmarks for tag "+params["tag"], req, w)
+		WriteJSONResponse(200, true, "Error getting bookmarks for tag "+params["tag"], req, w)
 	} else {
-		JsonDataResponse(200, false, response, req, w)
+		JSONDataResponse(200, false, response, req, w)
 	}
 }
