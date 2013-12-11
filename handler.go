@@ -63,12 +63,8 @@ func NewBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, d
 		bookmark["Date"] = time.Unix(int64(bookmark["Created"].(float64)), 0).Format("Jan 2, 2006 at 3:04pm")
 		bookmark["User"] = userID
 
-		var response r.WriteResponse
-		r.Db("magnet").
-			Table("bookmarks").
-			Insert(bookmark).
-			Run(dbSession).
-			One(&response)
+		response, _ := NewBookmark(userID, dbSession, bookmark)
+
 
 		if response.Inserted > 0 {
 			WriteJSONResponse(200, false, response.GeneratedKeys[0], req, w)
@@ -96,16 +92,7 @@ func EditBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, 
 			}
 		}
 
-		var response r.WriteResponse
-		err := r.Db("magnet").
-			Table("bookmarks").
-			Filter(r.Row.Attr("User").
-			Eq(userID).
-			And(r.Row.Attr("id").
-			Eq(params["bookmark"]))).
-			Update(bookmark).
-			Run(dbSession).
-			One(&response)
+		response, err := EditBookmark(userID, params, dbSession, bookmark)
 
 		if err != nil {
 			WriteJSONResponse(200, true, "Error deleting bookmark.", req, w)
