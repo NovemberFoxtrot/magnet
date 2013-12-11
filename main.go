@@ -37,12 +37,6 @@ func initDatabase(connectionString string) *r.Session {
 	return session
 }
 
-var Think *Connection
-
-func init() {
-	Think = new(Connection)
-}
-
 func main() {
 	m := martini.Classic()
 
