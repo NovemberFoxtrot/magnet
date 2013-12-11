@@ -140,20 +140,8 @@ func SearchHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.Co
 // GetTagHandler fetches books for a given tag
 func GetTagHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
 	_, userID := GetUserData(cs, req)
-	var response []interface{}
-	page, _ := strconv.ParseInt(params["page"], 10, 16)
 
-	err := r.Db("magnet").
-		Table("bookmarks").
-		Filter(r.Row.Attr("User").
-		Eq(userID).
-		And(r.Row.Attr("Tags").
-		Contains(params["tag"]))).
-		OrderBy(r.Desc("Created")).
-		Skip(50 * page).
-		Limit(50).
-		Run(dbSession).
-		All(&response)
+	response, err := GetTag(userID, params, dbSession)
 
 	if err != nil {
 		WriteJSONResponse(200, true, "Error getting bookmarks for tag "+params["tag"], req, w)
