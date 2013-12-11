@@ -126,21 +126,9 @@ func DeleteBookmarkHandler(params m.Params, req *h.Request, w h.ResponseWriter, 
 // SearchHandler writes out response when searching for a URL
 func SearchHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
 	_, userID := GetUserData(cs, req)
-	var response []interface{}
-	page, _ := strconv.ParseInt(params["page"], 10, 16)
 	query := req.PostFormValue("query")
 
-	err := r.Db("magnet").
-		Table("bookmarks").
-		Filter(r.Row.Attr("Title").
-		Match("(?i)" + query).
-		And(r.Row.Attr("User").
-		Eq(userID))).
-		OrderBy(r.Desc("Created")).
-		Skip(50 * page).
-		Limit(50).
-		Run(dbSession).
-		All(&response)
+	response, err := Search(userID, params, dbSession, query)
 
 	if err != nil {
 		WriteJSONResponse(200, true, "Error retrieving bookmarks", req, w)
