@@ -166,14 +166,7 @@ func LoginPostHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, cfg
 
 	var response []interface{}
 
-	err := r.Db("magnet").
-		Table("users").
-		Filter(r.Row.Attr("Username").
-		Eq(username).
-		And(r.Row.Attr("Password").
-		Eq(password))).
-		Run(dbSession).
-		All(&response)
+	response, err := LoginPost(dbSession, username, password)
 
 	if err != nil || len(response) == 0 {
 		WriteJSONResponse(200, true, "Invalid username or password.", req, w)
