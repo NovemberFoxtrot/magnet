@@ -65,7 +65,6 @@ func NewBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, d
 
 		response, _ := NewBookmark(userID, dbSession, bookmark)
 
-
 		if response.Inserted > 0 {
 			WriteJSONResponse(200, false, response.GeneratedKeys[0], req, w)
 		} else {
@@ -176,12 +175,7 @@ func LoginPostHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, cfg
 		session := Session{UserID: userID,
 			Expires: time.Now().Unix() + int64(cfg.SessionExpires)}
 
-		var response r.WriteResponse
-		err = r.Db("magnet").
-			Table("sessions").
-			Insert(session).
-			Run(dbSession).
-			One(&response)
+		response, err := LoginPostInsertSession(dbSession, session)
 
 		if err != nil || response.Inserted < 1 {
 			WriteJSONResponse(200, true, "Error creating the user session.", req, w)
@@ -199,14 +193,8 @@ func LoginPostHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, cfg
 // LogoutHandler writes out logout response
 func LogoutHandler(cs *s.CookieStore, req *h.Request, dbSession *r.Session, w h.ResponseWriter) {
 	session, _ := cs.Get(req, "magnet_session")
-	var response r.WriteResponse
 
-	r.Db("magnet").
-		Table("sessions").
-		Get(session.Values["session_id"]).
-		Delete().
-		Run(dbSession).
-		One(&response)
+	_, _ = Logout(dbSession, session)
 
 	session.Values["user_id"] = ""
 	session.Values["session_id"] = ""
