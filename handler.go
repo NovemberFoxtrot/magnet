@@ -228,12 +228,7 @@ func SignUpHandler(req *h.Request, w h.ResponseWriter, dbSession *r.Session, cs 
 	if err != nil || len(response) != 0 {
 		errors += "Username or email taken."
 	} else {
-		var response r.WriteResponse
-		err = r.Db("magnet").
-			Table("users").
-			Insert(user).
-			Run(dbSession).
-			One(&response)
+		_, err = SignUpInsert(dbSession, user)
 
 		if err != nil {
 			errors += "There was an error creating the user."

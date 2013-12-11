@@ -147,3 +147,15 @@ func SignUp(dbSession *rethinkgo.Session, user *User) ([]interface{}, error) {
 
 	return response, err
 }
+
+func SignUpInsert(dbSession *rethinkgo.Session, user *User) (rethinkgo.WriteResponse, error) {
+	var response rethinkgo.WriteResponse
+
+	err := rethinkgo.Db("magnet").
+		Table("users").
+		Insert(user).
+		Run(dbSession).
+		One(&response)
+
+	return response, err
+}
