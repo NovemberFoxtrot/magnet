@@ -1,9 +1,9 @@
 package main
 
 import (
-	r "github.com/christopherhesse/rethinkgo"
+	"github.com/christopherhesse/rethinkgo"
 	"github.com/codegangsta/martini"
-	s "github.com/gorilla/sessions"
+	"github.com/gorilla/sessions"
 	"github.com/hoisie/mustache"
 	"github.com/justinas/nosurf"
 	"net/http"
@@ -19,7 +19,7 @@ func CsrfFailHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetBookmarksHandler writes bookmarks to JSON data
-func GetBookmarksHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
+func GetBookmarksHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, dbSession *rethinkgo.Session) {
 	_, userID := GetUserData(cs, req)
 	page, _ := strconv.ParseInt(params["page"], 10, 16)
 	bookmarks := GetBookmarks(page, dbSession, userID)
@@ -27,7 +27,7 @@ func GetBookmarksHandler(params martini.Params, req *http.Request, w http.Respon
 }
 
 // IndexHandler writes out templates
-func IndexHandler(req *http.Request, w http.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
+func IndexHandler(req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, dbSession *rethinkgo.Session) {
 	username, userID := GetUserData(cs, req)
 	context := map[string]interface{}{
 		"title":      "Magnet",
@@ -43,7 +43,7 @@ func IndexHandler(req *http.Request, w http.ResponseWriter, cs *s.CookieStore, d
 }
 
 // NewBookmarkHandler writes out new bookmark JSON response
-func NewBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
+func NewBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, dbSession *rethinkgo.Session) {
 	// We use a map instead of Bookmark because id would be ""
 	bookmark := make(map[string]interface{})
 	bookmark["Title"] = req.PostFormValue("title")
@@ -74,7 +74,7 @@ func NewBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *s.CookieSt
 }
 
 // EditBookmarkHandler writes out response to editing a URL
-func EditBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *s.CookieStore, dbSession *r.Session, params martini.Params) {
+func EditBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, dbSession *rethinkgo.Session, params martini.Params) {
 	// We use a map instead of Bookmark because id would be ""
 	bookmark := make(map[string]interface{})
 	bookmark["Title"] = req.PostFormValue("title")
@@ -106,7 +106,7 @@ func EditBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *s.CookieS
 }
 
 // DeleteBookmarkHandler writes out response to deleting a bookmark
-func DeleteBookmarkHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
+func DeleteBookmarkHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, dbSession *rethinkgo.Session) {
 	_, userID := GetUserData(cs, req)
 
 	response, err := DeleteBookmark(userID, params, dbSession)
@@ -123,7 +123,7 @@ func DeleteBookmarkHandler(params martini.Params, req *http.Request, w http.Resp
 }
 
 // SearchHandler writes out response when searching for a URL
-func SearchHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
+func SearchHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, dbSession *rethinkgo.Session) {
 	_, userID := GetUserData(cs, req)
 	query := req.PostFormValue("query")
 
@@ -137,7 +137,7 @@ func SearchHandler(params martini.Params, req *http.Request, w http.ResponseWrit
 }
 
 // GetTagHandler fetches books for a given tag
-func GetTagHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
+func GetTagHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, dbSession *rethinkgo.Session) {
 	_, userID := GetUserData(cs, req)
 
 	response, err := GetTag(userID, params, dbSession)
@@ -159,7 +159,7 @@ func LoginHandler(r *http.Request, w http.ResponseWriter) {
 }
 
 // LoginPostHandler writes out login response
-func LoginPostHandler(req *http.Request, w http.ResponseWriter, cs *s.CookieStore, cfg *Config, dbSession *r.Session) {
+func LoginPostHandler(req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, cfg *Config, dbSession *rethinkgo.Session) {
 	username := req.PostFormValue("username")
 	password := cryptPassword(req.PostFormValue("password"), cfg.SecretKey)
 
@@ -191,7 +191,7 @@ func LoginPostHandler(req *http.Request, w http.ResponseWriter, cs *s.CookieStor
 }
 
 // LogoutHandler writes out logout response
-func LogoutHandler(cs *s.CookieStore, req *http.Request, dbSession *r.Session, w http.ResponseWriter) {
+func LogoutHandler(cs *sessions.CookieStore, req *http.Request, dbSession *rethinkgo.Session, w http.ResponseWriter) {
 	session, _ := cs.Get(req, "magnet_session")
 
 	_, _ = Logout(dbSession, session)
@@ -205,7 +205,7 @@ func LogoutHandler(cs *s.CookieStore, req *http.Request, dbSession *r.Session, w
 }
 
 // SignUpHandler writes out response to singing up
-func SignUpHandler(req *http.Request, w http.ResponseWriter, dbSession *r.Session, cs *s.CookieStore, cfg *Config) {
+func SignUpHandler(req *http.Request, w http.ResponseWriter, dbSession *rethinkgo.Session, cs *sessions.CookieStore, cfg *Config) {
 	user := new(User)
 	req.ParseForm()
 	user.Username = req.PostFormValue("username")
