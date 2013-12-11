@@ -223,15 +223,7 @@ func SignUpHandler(req *h.Request, w h.ResponseWriter, dbSession *r.Session, cs 
 		errors += "Invalid email address. "
 	}
 
-	var response []interface{}
-	err := r.Db("magnet").
-		Table("users").
-		Filter(r.Row.Attr("Username").
-		Eq(user.Username).
-		Or(r.Row.Attr("Email").
-		Eq(user.Email))).
-		Run(dbSession).
-		All(&response)
+	response, err := SignUp(dbSession, user)
 
 	if err != nil || len(response) != 0 {
 		errors += "Username or email taken."

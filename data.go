@@ -132,3 +132,18 @@ func Logout(dbSession *rethinkgo.Session, session *sessions.Session) (rethinkgo.
 
 	return response, err
 }
+
+func SignUp(dbSession *rethinkgo.Session, user *User) ([]interface{}, error) {
+	var response []interface{}
+
+	err := rethinkgo.Db("magnet").
+		Table("users").
+		Filter(rethinkgo.Row.Attr("Username").
+		Eq(user.Username).
+		Or(rethinkgo.Row.Attr("Email").
+		Eq(user.Email))).
+		Run(dbSession).
+		All(&response)
+
+	return response, err
+}
