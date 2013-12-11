@@ -36,7 +36,9 @@ func IndexHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSessi
 		"tags":       GetTags(dbSession, userID),
 		"username":   username,
 	}
+
 	context["load_more"] = len(context["bookmarks"].([]Bookmark)) == 2
+
 	w.Write([]byte(mustache.RenderFileInLayout("templates/home.mustache", "templates/base.mustache", context)))
 }
 
@@ -120,17 +122,8 @@ func EditBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, 
 // DeleteBookmarkHandler writes out response to deleting a bookmark
 func DeleteBookmarkHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
 	_, userID := GetUserData(cs, req)
-	var response r.WriteResponse
 
-	err := r.Db("magnet").
-		Table("bookmarks").
-		Filter(r.Row.Attr("User").
-		Eq(userID).
-		And(r.Row.Attr("id").
-		Eq(params["bookmark"]))).
-		Delete().
-		Run(dbSession).
-		One(&response)
+	response, err := DeleteBookmark(userID, params, dbSession)
 
 	if err != nil {
 		WriteJSONResponse(200, true, "Error deleting bookmark.", req, w)
@@ -207,6 +200,7 @@ func LoginHandler(r *h.Request, w h.ResponseWriter) {
 func LoginPostHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, cfg *Config, dbSession *r.Session) {
 	username := req.PostFormValue("username")
 	password := cryptPassword(req.PostFormValue("password"), cfg.SecretKey)
+
 	var response []interface{}
 
 	err := r.Db("magnet").
