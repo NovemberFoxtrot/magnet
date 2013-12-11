@@ -54,12 +54,16 @@ func main() {
 
 	// Create a new cookie store
 	store := s.NewCookieStore([]byte(config.SecretKey))
+
 	// It will be available to all handlers as *sessions.CookieStore
 	m.Map(store)
+
 	// It will be available to all handlers as *r.Session
 	m.Map(dbSession)
+
 	// It will be available to all handlers as *Config
 	m.Map(config)
+
 	// public folder will serve the static content
 	m.Use(martini.Static("public"))
 

@@ -61,11 +61,6 @@ func AuthRequired(cs *s.CookieStore, req *h.Request, w h.ResponseWriter, dbSessi
 	}
 }
 
-// CsrfFailHandler writes invalid token response
-func CsrfFailHandler(w h.ResponseWriter, r *h.Request) {
-	WriteJSONResponse(200, true, "Provided token is not valid.", r, w)
-}
-
 // IsValidURL checks if URL can be parsed
 func IsValidURL(urlStr string) bool {
 	parsedURL, err := url.Parse(urlStr)
