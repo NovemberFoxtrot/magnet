@@ -2,11 +2,11 @@ package main
 
 import (
 	r "github.com/christopherhesse/rethinkgo"
-	m "github.com/codegangsta/martini"
+	"github.com/codegangsta/martini"
 	s "github.com/gorilla/sessions"
 	"github.com/hoisie/mustache"
 	"github.com/justinas/nosurf"
-	h "net/http"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -14,12 +14,12 @@ import (
 )
 
 // CsrfFailHandler writes invalid token response
-func CsrfFailHandler(w h.ResponseWriter, r *h.Request) {
+func CsrfFailHandler(w http.ResponseWriter, r *http.Request) {
 	WriteJSONResponse(200, true, "Provided token is not valid.", r, w)
 }
 
 // GetBookmarksHandler writes bookmarks to JSON data
-func GetBookmarksHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
+func GetBookmarksHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
 	_, userID := GetUserData(cs, req)
 	page, _ := strconv.ParseInt(params["page"], 10, 16)
 	bookmarks := GetBookmarks(page, dbSession, userID)
@@ -27,7 +27,7 @@ func GetBookmarksHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs
 }
 
 // IndexHandler writes out templates
-func IndexHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
+func IndexHandler(req *http.Request, w http.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
 	username, userID := GetUserData(cs, req)
 	context := map[string]interface{}{
 		"title":      "Magnet",
@@ -43,7 +43,7 @@ func IndexHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSessi
 }
 
 // NewBookmarkHandler writes out new bookmark JSON response
-func NewBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
+func NewBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
 	// We use a map instead of Bookmark because id would be ""
 	bookmark := make(map[string]interface{})
 	bookmark["Title"] = req.PostFormValue("title")
@@ -74,7 +74,7 @@ func NewBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, d
 }
 
 // EditBookmarkHandler writes out response to editing a URL
-func EditBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session, params m.Params) {
+func EditBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *s.CookieStore, dbSession *r.Session, params martini.Params) {
 	// We use a map instead of Bookmark because id would be ""
 	bookmark := make(map[string]interface{})
 	bookmark["Title"] = req.PostFormValue("title")
@@ -106,7 +106,7 @@ func EditBookmarkHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, 
 }
 
 // DeleteBookmarkHandler writes out response to deleting a bookmark
-func DeleteBookmarkHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
+func DeleteBookmarkHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
 	_, userID := GetUserData(cs, req)
 
 	response, err := DeleteBookmark(userID, params, dbSession)
@@ -123,7 +123,7 @@ func DeleteBookmarkHandler(params m.Params, req *h.Request, w h.ResponseWriter, 
 }
 
 // SearchHandler writes out response when searching for a URL
-func SearchHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
+func SearchHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
 	_, userID := GetUserData(cs, req)
 	query := req.PostFormValue("query")
 
@@ -137,7 +137,7 @@ func SearchHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.Co
 }
 
 // GetTagHandler fetches books for a given tag
-func GetTagHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
+func GetTagHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *s.CookieStore, dbSession *r.Session) {
 	_, userID := GetUserData(cs, req)
 
 	response, err := GetTag(userID, params, dbSession)
@@ -150,7 +150,7 @@ func GetTagHandler(params m.Params, req *h.Request, w h.ResponseWriter, cs *s.Co
 }
 
 // LoginHandler writes out login template
-func LoginHandler(r *h.Request, w h.ResponseWriter) {
+func LoginHandler(r *http.Request, w http.ResponseWriter) {
 	context := map[string]interface{}{
 		"title":      "Access magnet",
 		"csrf_token": nosurf.Token(r),
@@ -159,7 +159,7 @@ func LoginHandler(r *h.Request, w h.ResponseWriter) {
 }
 
 // LoginPostHandler writes out login response
-func LoginPostHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, cfg *Config, dbSession *r.Session) {
+func LoginPostHandler(req *http.Request, w http.ResponseWriter, cs *s.CookieStore, cfg *Config, dbSession *r.Session) {
 	username := req.PostFormValue("username")
 	password := cryptPassword(req.PostFormValue("password"), cfg.SecretKey)
 
@@ -191,7 +191,7 @@ func LoginPostHandler(req *h.Request, w h.ResponseWriter, cs *s.CookieStore, cfg
 }
 
 // LogoutHandler writes out logout response
-func LogoutHandler(cs *s.CookieStore, req *h.Request, dbSession *r.Session, w h.ResponseWriter) {
+func LogoutHandler(cs *s.CookieStore, req *http.Request, dbSession *r.Session, w http.ResponseWriter) {
 	session, _ := cs.Get(req, "magnet_session")
 
 	_, _ = Logout(dbSession, session)
@@ -201,11 +201,11 @@ func LogoutHandler(cs *s.CookieStore, req *h.Request, dbSession *r.Session, w h.
 	session.Values["username"] = ""
 	session.Save(req, w)
 
-	h.Redirect(w, req, "/", 301)
+	http.Redirect(w, req, "/", 301)
 }
 
 // SignUpHandler writes out response to singing up
-func SignUpHandler(req *h.Request, w h.ResponseWriter, dbSession *r.Session, cs *s.CookieStore, cfg *Config) {
+func SignUpHandler(req *http.Request, w http.ResponseWriter, dbSession *r.Session, cs *s.CookieStore, cfg *Config) {
 	user := new(User)
 	req.ParseForm()
 	user.Username = req.PostFormValue("username")
