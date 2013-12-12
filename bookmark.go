@@ -16,7 +16,7 @@ type Bookmark struct {
 }
 
 // GetBookmarks fetches bookmarks from rethinkdb
-func GetBookmarks(page int64, dbSession *r.Session, userID string) []Bookmark {
+func GetBookmarks(page int64, connection *Connection, userID string) []Bookmark {
 	var bookmarks []Bookmark
 
 	err := r.Db("magnet").
@@ -26,7 +26,7 @@ func GetBookmarks(page int64, dbSession *r.Session, userID string) []Bookmark {
 		OrderBy(r.Desc("Created")).
 		Skip(50 * page).
 		Limit(50).
-		Run(dbSession).
+		Run(connection.session).
 		All(&bookmarks)
 
 	if err == nil {

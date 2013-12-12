@@ -11,7 +11,7 @@ type Tag struct {
 }
 
 // GetTags fetches tags from rethinkdb
-func GetTags(dbSession *r.Session, userID string) []Tag {
+func GetTags(connection *Connection, userID string) []Tag {
 	var response []interface{}
 	tagMap := make(map[string]int)
 	var tags []Tag
@@ -21,7 +21,7 @@ func GetTags(dbSession *r.Session, userID string) []Tag {
 		Filter(r.Row.Attr("User").
 		Eq(userID)).
 		WithFields("Tags").
-		Run(dbSession).
+		Run(connection.session).
 		All(&response)
 
 	if err == nil {

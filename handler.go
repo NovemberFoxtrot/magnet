@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/christopherhesse/rethinkgo"
 	"github.com/codegangsta/martini"
 	"github.com/gorilla/sessions"
 	"github.com/hoisie/mustache"
@@ -19,21 +18,21 @@ func CsrfFailHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetBookmarksHandler writes bookmarks to JSON data
-func GetBookmarksHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, dbSession *rethinkgo.Session) {
+func GetBookmarksHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, connection *Connection) {
 	_, userID := GetUserData(cs, req)
 	page, _ := strconv.ParseInt(params["page"], 10, 16)
-	bookmarks := GetBookmarks(page, dbSession, userID)
+	bookmarks := GetBookmarks(page, connection, userID)
 	JSONDataResponse(200, false, bookmarks, req, w)
 }
 
 // IndexHandler writes out templates
-func IndexHandler(req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, dbSession *rethinkgo.Session) {
+func IndexHandler(req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, connection *Connection) {
 	username, userID := GetUserData(cs, req)
 	context := map[string]interface{}{
 		"title":      "Magnet",
 		"csrf_token": nosurf.Token(req),
-		"bookmarks":  GetBookmarks(0, dbSession, userID),
-		"tags":       GetTags(dbSession, userID),
+		"bookmarks":  GetBookmarks(0, connection, userID),
+		"tags":       GetTags(connection, userID),
 		"username":   username,
 	}
 
@@ -137,7 +136,7 @@ func SearchHandler(params martini.Params, req *http.Request, w http.ResponseWrit
 }
 
 // GetTagHandler fetches books for a given tag
-func GetTagHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, dbSession *rethinkgo.Session, connection *Connection) {
+func GetTagHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, connection *Connection) {
 	_, userID := GetUserData(cs, req)
 
 	response, err := connection.GetTag(userID, params)
