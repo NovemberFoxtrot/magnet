@@ -9,33 +9,25 @@ import (
 	"github.com/justinas/nosurf"
 	h "net/http"
 	"os"
-	"time"
 )
 
 func initDatabase(connectionString string) *r.Session {
 	session, err := r.Connect(connectionString, "magnet")
+
 	if err != nil {
 		fmt.Println("Error connecting:", err)
 		return nil
 	}
 
-	r.DbCreate("magnet").Run(session).Exec()
-	r.TableCreate("users").Run(session).Exec()
-	r.TableCreate("bookmarks").Run(session).Exec()
-	r.TableCreate("sessions").Run(session).Exec()
+	InitDatabase(session)
 
 	// Delete all expired sessions
-	var rsp r.WriteResponse
-	r.Db("magnet").
-		Table("sessions").
-		Filter(r.Row.Attr("Expires").
-		Lt(time.Now().Unix())).
-		Delete().
-		Run(session).
-		One(&rsp)
+	WipeExpiredSessions(session)
 
 	return session
 }
+
+var DB *Connection
 
 func main() {
 	m := martini.Classic()
@@ -48,6 +40,9 @@ func main() {
 
 	// Init database
 	dbSession := initDatabase(config.ConnectionString)
+
+	DB = &Connection{session: dbSession}
+
 	if dbSession == nil {
 		os.Exit(2)
 	}
@@ -60,6 +55,7 @@ func main() {
 
 	// It will be available to all handlers as *r.Session
 	m.Map(dbSession)
+	m.Map(DB)
 
 	// It will be available to all handlers as *Config
 	m.Map(config)

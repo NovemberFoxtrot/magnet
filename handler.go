@@ -43,7 +43,7 @@ func IndexHandler(req *http.Request, w http.ResponseWriter, cs *sessions.CookieS
 }
 
 // NewBookmarkHandler writes out new bookmark JSON response
-func NewBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, dbSession *rethinkgo.Session) {
+func NewBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, connection *Connection) {
 	// We use a map instead of Bookmark because id would be ""
 	bookmark := make(map[string]interface{})
 	bookmark["Title"] = req.PostFormValue("title")
@@ -63,7 +63,7 @@ func NewBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.C
 		bookmark["Date"] = time.Unix(int64(bookmark["Created"].(float64)), 0).Format("Jan 2, 2006 at 3:04pm")
 		bookmark["User"] = userID
 
-		response, _ := NewBookmark(userID, dbSession, bookmark)
+		response, _ := connection.NewBookmark(userID, bookmark)
 
 		if response.Inserted > 0 {
 			WriteJSONResponse(200, false, response.GeneratedKeys[0], req, w)
@@ -74,7 +74,7 @@ func NewBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.C
 }
 
 // EditBookmarkHandler writes out response to editing a URL
-func EditBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, dbSession *rethinkgo.Session, params martini.Params) {
+func EditBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, connection *Connection, params martini.Params) {
 	// We use a map instead of Bookmark because id would be ""
 	bookmark := make(map[string]interface{})
 	bookmark["Title"] = req.PostFormValue("title")
@@ -91,7 +91,7 @@ func EditBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.
 			}
 		}
 
-		response, err := EditBookmark(userID, params, dbSession, bookmark)
+		response, err := connection.EditBookmark(userID, params, bookmark)
 
 		if err != nil {
 			WriteJSONResponse(200, true, "Error deleting bookmark.", req, w)
@@ -106,10 +106,10 @@ func EditBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.
 }
 
 // DeleteBookmarkHandler writes out response to deleting a bookmark
-func DeleteBookmarkHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, dbSession *rethinkgo.Session) {
+func DeleteBookmarkHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, connection *Connection) {
 	_, userID := GetUserData(cs, req)
 
-	response, err := DeleteBookmark(userID, params, dbSession)
+	response, err := connection.DeleteBookmark(userID, params)
 
 	if err != nil {
 		WriteJSONResponse(200, true, "Error deleting bookmark.", req, w)
@@ -123,11 +123,11 @@ func DeleteBookmarkHandler(params martini.Params, req *http.Request, w http.Resp
 }
 
 // SearchHandler writes out response when searching for a URL
-func SearchHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, dbSession *rethinkgo.Session) {
+func SearchHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, connection *Connection) {
 	_, userID := GetUserData(cs, req)
 	query := req.PostFormValue("query")
 
-	response, err := Search(userID, params, dbSession, query)
+	response, err := connection.Search(userID, params, query)
 
 	if err != nil {
 		WriteJSONResponse(200, true, "Error retrieving bookmarks", req, w)
@@ -137,10 +137,10 @@ func SearchHandler(params martini.Params, req *http.Request, w http.ResponseWrit
 }
 
 // GetTagHandler fetches books for a given tag
-func GetTagHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, dbSession *rethinkgo.Session) {
+func GetTagHandler(params martini.Params, req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, dbSession *rethinkgo.Session, connection *Connection) {
 	_, userID := GetUserData(cs, req)
 
-	response, err := GetTag(userID, params, dbSession)
+	response, err := connection.GetTag(userID, params)
 
 	if err != nil {
 		WriteJSONResponse(200, true, "Error getting bookmarks for tag "+params["tag"], req, w)
@@ -159,13 +159,13 @@ func LoginHandler(r *http.Request, w http.ResponseWriter) {
 }
 
 // LoginPostHandler writes out login response
-func LoginPostHandler(req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, cfg *Config, dbSession *rethinkgo.Session) {
+func LoginPostHandler(req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, cfg *Config, connection *Connection) {
 	username := req.PostFormValue("username")
 	password := cryptPassword(req.PostFormValue("password"), cfg.SecretKey)
 
 	var response []interface{}
 
-	response, err := LoginPost(dbSession, username, password)
+	response, err := connection.LoginPost(username, password)
 
 	if err != nil || len(response) == 0 {
 		WriteJSONResponse(200, true, "Invalid username or password.", req, w)
@@ -175,7 +175,7 @@ func LoginPostHandler(req *http.Request, w http.ResponseWriter, cs *sessions.Coo
 		session := Session{UserID: userID,
 			Expires: time.Now().Unix() + int64(cfg.SessionExpires)}
 
-		response, err := LoginPostInsertSession(dbSession, session)
+		response, err := connection.LoginPostInsertSession(session)
 
 		if err != nil || response.Inserted < 1 {
 			WriteJSONResponse(200, true, "Error creating the user session.", req, w)
@@ -191,10 +191,10 @@ func LoginPostHandler(req *http.Request, w http.ResponseWriter, cs *sessions.Coo
 }
 
 // LogoutHandler writes out logout response
-func LogoutHandler(cs *sessions.CookieStore, req *http.Request, dbSession *rethinkgo.Session, w http.ResponseWriter) {
+func LogoutHandler(cs *sessions.CookieStore, req *http.Request, connection *Connection, w http.ResponseWriter) {
 	session, _ := cs.Get(req, "magnet_session")
 
-	_, _ = Logout(dbSession, session)
+	_, _ = connection.Logout(session)
 
 	session.Values["user_id"] = ""
 	session.Values["session_id"] = ""
@@ -205,7 +205,7 @@ func LogoutHandler(cs *sessions.CookieStore, req *http.Request, dbSession *rethi
 }
 
 // SignUpHandler writes out response to singing up
-func SignUpHandler(req *http.Request, w http.ResponseWriter, dbSession *rethinkgo.Session, cs *sessions.CookieStore, cfg *Config) {
+func SignUpHandler(req *http.Request, w http.ResponseWriter, connection *Connection, cs *sessions.CookieStore, cfg *Config) {
 	user := new(User)
 	req.ParseForm()
 	user.Username = req.PostFormValue("username")
@@ -223,12 +223,12 @@ func SignUpHandler(req *http.Request, w http.ResponseWriter, dbSession *rethinkg
 		errors += "Invalid email address. "
 	}
 
-	response, err := SignUp(dbSession, user)
+	response, err := connection.SignUp(user)
 
 	if err != nil || len(response) != 0 {
 		errors += "Username or email taken."
 	} else {
-		_, err = SignUpInsert(dbSession, user)
+		_, err = connection.SignUpInsert(user)
 
 		if err != nil {
 			errors += "There was an error creating the user."
