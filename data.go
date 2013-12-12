@@ -219,7 +219,7 @@ func (c *Connection) WipeExpiredSessions() (rethinkgo.WriteResponse, error) {
 
 func (c *Connection) GetTags(userID string) ([]interface{}, error) {
 	var response []interface{}
-	
+
 	err := rethinkgo.Db("magnet").
 		Table("bookmarks").
 		Filter(rethinkgo.Row.Attr("User").
