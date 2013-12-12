@@ -48,6 +48,9 @@ func Start(DB *Connection, config *Config) {
 	m.Post("/signup", SignUpHandler)
 	m.Post("/new_token", AuthRequired, RequestNewToken)
 
+	// Test
+	m.Get("/test", TestHandler)
+
 	// Home
 	m.Get("/", func(cs *sessions.CookieStore, req *http.Request, w http.ResponseWriter, connection *Connection) {
 		if GetUserID(cs, req, connection) == "" {
@@ -88,6 +91,11 @@ func IndexHandler(req *http.Request, w http.ResponseWriter, cs *sessions.CookieS
 	context["load_more"] = len(context["bookmarks"].([]Bookmark)) == 2
 
 	w.Write([]byte(mustache.RenderFileInLayout("templates/home.mustache", "templates/base.mustache", context)))
+}
+
+// TestHandler runs the tests
+func TestHandler(req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, connection *Connection) {
+	w.Write([]byte(mustache.RenderFileInLayout("templates/test.mustache", "templates/test.base.mustache", nil)))
 }
 
 // NewBookmarkHandler writes out new bookmark JSON response
