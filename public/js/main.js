@@ -136,6 +136,8 @@ function submitNewBookmark(form) {
         },
         token
     );
+    
+    heightCallback();
 }
 
 function showAlert(msg, htmlClass) {
@@ -178,7 +180,7 @@ function renderBookmark(bkId, title, url, tags, date, forceComplete) {
         }
     }
     bookmarkHtml += '</div>' + ((!editing) ? '</article>' : '');
-    
+
     return bookmarkHtml;
 }
 
@@ -283,6 +285,8 @@ function deleteBookmark(id, elem) {
                     showAlert('Bookmark deleted successfully.', 'success');
                     elem.style.display = 'none';
                     updateTags(getTagsFromBookmark(elem), true);
+                    
+                    heightCallback();
                 }
             },
             document.getElementById('csrf_token').value
@@ -367,6 +371,8 @@ function editBookmark(form) {
                 closeEditBookmarkForm(form);
                 var viewportOffset = currBk.getBoundingClientRect();
                 window.scrollTo(0, viewportOffset.top);
+                
+                heightCallback();
             }
         },
         token
@@ -445,6 +451,8 @@ function getBookmarksForTag(tag) {
                     } else {
                         document.getElementById('load-more').style.display = 'none';
                     }
+                    
+                    heightCallback();
                 } else {
                     showAlert('There are no bookmarks for tag "' + tag + '"', 'info')
                 }
@@ -491,6 +499,8 @@ function searchBookmarks(query) {
                     } else {
                         document.getElementById('load-more').style.display = 'none';
                     }
+                    
+                    heightCallback();
                 } else {
                     showAlert('There are no bookmarks for tag "' + tag + '"', 'info')
                 }
@@ -522,9 +532,10 @@ function browseAll() {
                 if (data.length > 0) {
                     list.innerHTML = '';
                     for (i = 0; i < data.length; i++) {
+                        
                         list.innerHTML += renderBookmark(data[i].id,
                                                         data[i].Title,
-                                                        data[i].Url,
+                                                        data[i].URL,
                                                         data[i].Tags.join(', '),
                                                         data[i].Date,
                                                         true);
@@ -540,6 +551,8 @@ function browseAll() {
                     } else {
                         document.getElementById('load-more').style.display = 'none';
                     }
+                    
+                    heightCallback();
                 } else {
                     showAlert('There are no bookmarks to display.', 'info')
                 }
@@ -581,7 +594,6 @@ function loadMore(page) {
                 showAlert(response.message, 'error');
             } else {
                 data = response.data;
-                console.log(data);
                 if (data.length > 0) {
                     for (i = 0; i < data.length; i++) {
                         list.innerHTML += renderBookmark(data[i].id,
@@ -600,6 +612,8 @@ function loadMore(page) {
                     } else {
                         document.getElementById('load-more').style.display = 'none';
                     }
+                    
+                    heightCallback();
                 } else {
                     showAlert('There are no bookmarks to display.', 'info')
                 }

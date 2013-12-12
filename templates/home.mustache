@@ -44,11 +44,10 @@
 		</article>
 		{{/bookmarks}}
 	</section>
-    {{#load_more}}
-        <div id="load-more">
+    
+        <div id="load-more" {{^load_more}}class="hidden"{{/load_more}}>
             <button onclick="loadMore(1); return false;">Load more</button>
         </div>
-    {{/load_more}}
 </div>
 <aside>
 	<div id="aside-head"><h1><span class="ion-magnet"></span></h1></div>
