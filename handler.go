@@ -13,6 +13,9 @@ import (
 )
 
 func Start(DB *Connection, store *sessions.CookieStore, config *Config) {
+	// Create a new cookie store
+	store := sessions.NewCookieStore([]byte(config.SecretKey))
+
 	m := martini.Classic()
 
 	// It will be available to all handlers as *sessions.CookieStore

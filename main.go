@@ -6,20 +6,22 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-func main() {
-	// Read config
+func loadConfig(path string) *Config {
 	reader, _ := os.Open("config.json")
 	decoder := json.NewDecoder(reader)
 	config := &Config{}
 	decoder.Decode(&config)
+
+	return config
+}
+
+func main() {
+	config := loadConfig("config.json")
 
 	DB := &Connection{}
 
 	// Init database
 	DB.initDatabase(config.ConnectionString)
 
-	// Create a new cookie store
-	store := sessions.NewCookieStore([]byte(config.SecretKey))
-
-	Start(DB, store, config)
+	Start(DB, config)
 }
