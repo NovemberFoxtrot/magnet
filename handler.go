@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func Start(DB *Connection, store *sessions.CookieStore, config *Config) {
+func Start(DB *Connection, config *Config) {
 	// Create a new cookie store
 	store := sessions.NewCookieStore([]byte(config.SecretKey))
 
@@ -255,6 +255,7 @@ func LogoutHandler(cs *sessions.CookieStore, req *http.Request, connection *Conn
 // SignUpHandler writes out response to singing up
 func SignUpHandler(req *http.Request, w http.ResponseWriter, connection *Connection, cs *sessions.CookieStore, cfg *Config) {
 	user := new(User)
+
 	req.ParseForm()
 	user.Username = req.PostFormValue("username")
 	user.Email = req.PostFormValue("email")
