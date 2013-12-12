@@ -2,15 +2,14 @@ package main
 
 import (
 	"encoding/json"
-	r "github.com/christopherhesse/rethinkgo"
-	s "github.com/gorilla/sessions"
-	h "net/http"
+	"github.com/gorilla/sessions"
+	"net/http"
 	"net/url"
 	"time"
 )
 
 // JSONDataResponse writes JSON data to ResponseWriter
-func JSONDataResponse(status int, err bool, data interface{}, r *h.Request, w h.ResponseWriter) {
+func JSONDataResponse(status int, err bool, data interface{}, r *http.Request, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	resp := make(map[string]interface{})
 	resp["status"] = status
@@ -22,7 +21,7 @@ func JSONDataResponse(status int, err bool, data interface{}, r *h.Request, w h.
 }
 
 // WriteJSONResponse writes JSON to the ResponseWriter
-func WriteJSONResponse(status int, error bool, message string, r *h.Request, w h.ResponseWriter) {
+func WriteJSONResponse(status int, error bool, message string, r *http.Request, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	resp := make(map[string]interface{})
 	resp["status"] = status
@@ -34,16 +33,13 @@ func WriteJSONResponse(status int, error bool, message string, r *h.Request, w h
 }
 
 // GetUserID fetches userID from rethinkdb
-func GetUserID(cs *s.CookieStore, req *h.Request, connection *Connection) string {
+func GetUserID(cs *sessions.CookieStore, req *http.Request, connection *Connection) string {
 	session, _ := cs.Get(req, "magnet_session")
 	var response map[string]interface{}
+
 	userID := ""
-	// Get user session if it hasn't expired yet
-	err := r.Db("magnet").
-		Table("sessions").
-		Get(session.Values["session_id"]).
-		Run(connection.session).
-		One(&response)
+
+	response, err := connection.GetUnexpiredSession(session)
 
 	if err == nil && len(response) > 0 {
 		if int64(response["Expires"].(float64)) > time.Now().Unix() {
@@ -55,7 +51,7 @@ func GetUserID(cs *s.CookieStore, req *h.Request, connection *Connection) string
 }
 
 // AuthRequired checks user session
-func AuthRequired(cs *s.CookieStore, req *h.Request, w h.ResponseWriter, connection *Connection) {
+func AuthRequired(cs *sessions.CookieStore, req *http.Request, w http.ResponseWriter, connection *Connection) {
 	if GetUserID(cs, req, connection) == "" {
 		WriteJSONResponse(401, true, "User is not logged in.", req, w)
 	}

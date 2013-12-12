@@ -230,3 +230,15 @@ func (c *Connection) GetTags(userID string) ([]interface{}, error) {
 
 	return response, err
 }
+
+func (c *Connection) GetUnexpiredSession(session *sessions.Session) (map[string]interface{}, error) {
+	var response map[string]interface{}
+
+	err := rethinkgo.Db("magnet").
+		Table("sessions").
+		Get(session.Values["session_id"]).
+		Run(c.session).
+		One(&response)
+
+	return response, err
+}
