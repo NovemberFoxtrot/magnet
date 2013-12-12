@@ -1,9 +1,5 @@
 package main
 
-import (
-	r "github.com/christopherhesse/rethinkgo"
-)
-
 // Tag for JSON
 type Tag struct {
 	Name  string
@@ -11,18 +7,11 @@ type Tag struct {
 }
 
 // GetTags fetches tags from rethinkdb
-func GetTags(dbSession *r.Session, userID string) []Tag {
-	var response []interface{}
+func GetTags(connection *Connection, userID string) []Tag {
 	tagMap := make(map[string]int)
 	var tags []Tag
 
-	err := r.Db("magnet").
-		Table("bookmarks").
-		Filter(r.Row.Attr("User").
-		Eq(userID)).
-		WithFields("Tags").
-		Run(dbSession).
-		All(&response)
+	response, err := connection.GetTags(userID)
 
 	if err == nil {
 		// Search por repeated tags and count them

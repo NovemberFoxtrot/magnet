@@ -3,9 +3,9 @@ package main
 import (
 	"crypto/sha1"
 	"encoding/base64"
-	s "github.com/gorilla/sessions"
+	"github.com/gorilla/sessions"
 	"github.com/justinas/nosurf"
-	h "net/http"
+	"net/http"
 )
 
 // User for JSON schema
@@ -22,7 +22,7 @@ type Session struct {
 }
 
 // GetUserData fetches user session data
-func GetUserData(cs *s.CookieStore, req *h.Request) (string, string) {
+func GetUserData(cs *sessions.CookieStore, req *http.Request) (string, string) {
 	session, _ := cs.Get(req, "magnet_session")
 	return session.Values["username"].(string), session.Values["user_id"].(string)
 }
@@ -34,6 +34,6 @@ func cryptPassword(password, salt string) string {
 }
 
 // RequestNewToken writes out nosurf token
-func RequestNewToken(r *h.Request, w h.ResponseWriter) {
+func RequestNewToken(r *http.Request, w http.ResponseWriter) {
 	WriteJSONResponse(200, false, nosurf.Token(r), r, w)
 }
