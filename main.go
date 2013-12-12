@@ -2,8 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	r "github.com/christopherhesse/rethinkgo"
 	"github.com/codegangsta/martini"
 	s "github.com/gorilla/sessions"
 	"github.com/justinas/nosurf"
@@ -11,26 +9,20 @@ import (
 	"os"
 )
 
-func initDatabase(connectionString string) *r.Session {
-	session, err := r.Connect(connectionString, "magnet")
+func initDatabase(connectionString string) {
+	DB.SetSession(connectionString, "magnet")
 
-	if err != nil {
-		fmt.Println("Error connecting:", err)
-		return nil
-	}
+	DB.InitDatabase()
 
-	InitDatabase(session)
-
-	// Delete all expired sessions
-	WipeExpiredSessions(session)
-
-	return session
+	DB.WipeExpiredSessions()
 }
 
 var DB *Connection
 
 func main() {
 	m := martini.Classic()
+
+	DB = &Connection{}
 
 	// Read config
 	reader, _ := os.Open("config.json")
@@ -39,13 +31,7 @@ func main() {
 	decoder.Decode(&config)
 
 	// Init database
-	dbSession := initDatabase(config.ConnectionString)
-
-	DB = &Connection{session: dbSession}
-
-	if dbSession == nil {
-		os.Exit(2)
-	}
+	initDatabase(config.ConnectionString)
 
 	// Create a new cookie store
 	store := s.NewCookieStore([]byte(config.SecretKey))
@@ -54,7 +40,6 @@ func main() {
 	m.Map(store)
 
 	// It will be available to all handlers as *r.Session
-	m.Map(dbSession)
 	m.Map(DB)
 
 	// It will be available to all handlers as *Config
@@ -82,8 +67,8 @@ func main() {
 	m.Post("/new_token", AuthRequired, RequestNewToken)
 
 	// Home
-	m.Get("/", func(cs *s.CookieStore, req *h.Request, w h.ResponseWriter, dbSession *r.Session) {
-		if GetUserID(cs, req, dbSession) == "" {
+	m.Get("/", func(cs *s.CookieStore, req *h.Request, w h.ResponseWriter, connection *Connection) {
+		if GetUserID(cs, req, connection) == "" {
 			LoginHandler(req, w)
 		}
 	}, IndexHandler)

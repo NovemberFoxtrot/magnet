@@ -34,7 +34,7 @@ func WriteJSONResponse(status int, error bool, message string, r *h.Request, w h
 }
 
 // GetUserID fetches userID from rethinkdb
-func GetUserID(cs *s.CookieStore, req *h.Request, dbSession *r.Session) string {
+func GetUserID(cs *s.CookieStore, req *h.Request, connection *Connection) string {
 	session, _ := cs.Get(req, "magnet_session")
 	var response map[string]interface{}
 	userID := ""
@@ -42,7 +42,7 @@ func GetUserID(cs *s.CookieStore, req *h.Request, dbSession *r.Session) string {
 	err := r.Db("magnet").
 		Table("sessions").
 		Get(session.Values["session_id"]).
-		Run(dbSession).
+		Run(connection.session).
 		One(&response)
 
 	if err == nil && len(response) > 0 {
@@ -55,8 +55,8 @@ func GetUserID(cs *s.CookieStore, req *h.Request, dbSession *r.Session) string {
 }
 
 // AuthRequired checks user session
-func AuthRequired(cs *s.CookieStore, req *h.Request, w h.ResponseWriter, dbSession *r.Session) {
-	if GetUserID(cs, req, dbSession) == "" {
+func AuthRequired(cs *s.CookieStore, req *h.Request, w h.ResponseWriter, connection *Connection) {
+	if GetUserID(cs, req, connection) == "" {
 		WriteJSONResponse(401, true, "User is not logged in.", req, w)
 	}
 }

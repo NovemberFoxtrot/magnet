@@ -4,12 +4,23 @@ import (
 	"github.com/christopherhesse/rethinkgo"
 	"github.com/codegangsta/martini"
 	"github.com/gorilla/sessions"
+	"log"
 	"strconv"
 	"time"
 )
 
 type Connection struct {
 	session *rethinkgo.Session
+}
+
+func (c *Connection) SetSession(address, database string) {
+	session, err := rethinkgo.Connect(address, "magnet")
+
+	if err != nil {
+		log.Fatal("Error connecting:", err)
+	}
+
+	c.session = session
 }
 
 func (c *Connection) NewBookmark(userID string, bookmark map[string]interface{}) (rethinkgo.WriteResponse, error) {
@@ -161,14 +172,14 @@ func (c *Connection) SignUpInsert(user *User) (rethinkgo.WriteResponse, error) {
 	return response, err
 }
 
-func InitDatabase(session *rethinkgo.Session) {
-	rethinkgo.DbCreate("magnet").Run(session).Exec()
-	rethinkgo.TableCreate("users").Run(session).Exec()
-	rethinkgo.TableCreate("bookmarks").Run(session).Exec()
-	rethinkgo.TableCreate("sessions").Run(session).Exec()
+func (c *Connection) InitDatabase() {
+	rethinkgo.DbCreate("magnet").Run(c.session).Exec()
+	rethinkgo.TableCreate("users").Run(c.session).Exec()
+	rethinkgo.TableCreate("bookmarks").Run(c.session).Exec()
+	rethinkgo.TableCreate("sessions").Run(c.session).Exec()
 }
 
-func WipeExpiredSessions(session *rethinkgo.Session) (rethinkgo.WriteResponse, error) {
+func (c *Connection) WipeExpiredSessions() (rethinkgo.WriteResponse, error) {
 	var response rethinkgo.WriteResponse
 
 	err := rethinkgo.Db("magnet").
@@ -176,7 +187,7 @@ func WipeExpiredSessions(session *rethinkgo.Session) (rethinkgo.WriteResponse, e
 		Filter(rethinkgo.Row.Attr("Expires").
 		Lt(time.Now().Unix())).
 		Delete().
-		Run(session).
+		Run(c.session).
 		One(&response)
 
 	return response, err
