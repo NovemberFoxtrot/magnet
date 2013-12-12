@@ -13,6 +13,30 @@ type Connection struct {
 	session *rethinkgo.Session
 }
 
+func (c *Connection) GetBookmarks(userID string, page int64) ([]Bookmark, error) {
+	var bookmarks []Bookmark
+
+	err := rethinkgo.Db("magnet").
+		Table("bookmarks").
+		Filter(rethinkgo.Row.Attr("User").
+		Eq(userID)).
+		OrderBy(rethinkgo.Desc("Created")).
+		Skip(50 * page).
+		Limit(50).
+		Run(c.session).
+		All(&bookmarks)
+
+	return bookmarks, err
+}
+
+func (c *Connection) initDatabase(connectionString string) {
+	c.SetSession(connectionString, "magnet")
+
+	c.InitDatabase()
+
+	c.WipeExpiredSessions()
+}
+
 func (c *Connection) SetSession(address, database string) {
 	session, err := rethinkgo.Connect(address, "magnet")
 
@@ -189,6 +213,20 @@ func (c *Connection) WipeExpiredSessions() (rethinkgo.WriteResponse, error) {
 		Delete().
 		Run(c.session).
 		One(&response)
+
+	return response, err
+}
+
+func (c *Connection) GetTags(userID string) ([]interface{}, error) {
+	var response []interface{}
+	
+	err := rethinkgo.Db("magnet").
+		Table("bookmarks").
+		Filter(rethinkgo.Row.Attr("User").
+		Eq(userID)).
+		WithFields("Tags").
+		Run(c.session).
+		All(&response)
 
 	return response, err
 }

@@ -1,9 +1,5 @@
 package main
 
-import (
-	r "github.com/christopherhesse/rethinkgo"
-)
-
 // Bookmark for JSON schema
 type Bookmark struct {
 	ID      string `json:"id"`
@@ -17,17 +13,7 @@ type Bookmark struct {
 
 // GetBookmarks fetches bookmarks from rethinkdb
 func GetBookmarks(page int64, connection *Connection, userID string) []Bookmark {
-	var bookmarks []Bookmark
-
-	err := r.Db("magnet").
-		Table("bookmarks").
-		Filter(r.Row.Attr("User").
-		Eq(userID)).
-		OrderBy(r.Desc("Created")).
-		Skip(50 * page).
-		Limit(50).
-		Run(connection.session).
-		All(&bookmarks)
+	bookmarks, err := connection.GetBookmarks(userID, page)
 
 	if err == nil {
 		for i := range bookmarks {

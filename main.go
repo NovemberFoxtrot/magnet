@@ -3,26 +3,16 @@ package main
 import (
 	"encoding/json"
 	"github.com/codegangsta/martini"
-	s "github.com/gorilla/sessions"
+	"github.com/gorilla/sessions"
 	"github.com/justinas/nosurf"
-	h "net/http"
+	"net/http"
 	"os"
 )
-
-func initDatabase(connectionString string) {
-	DB.SetSession(connectionString, "magnet")
-
-	DB.InitDatabase()
-
-	DB.WipeExpiredSessions()
-}
-
-var DB *Connection
 
 func main() {
 	m := martini.Classic()
 
-	DB = &Connection{}
+	DB := &Connection{}
 
 	// Read config
 	reader, _ := os.Open("config.json")
@@ -31,15 +21,15 @@ func main() {
 	decoder.Decode(&config)
 
 	// Init database
-	initDatabase(config.ConnectionString)
+	DB.initDatabase(config.ConnectionString)
 
 	// Create a new cookie store
-	store := s.NewCookieStore([]byte(config.SecretKey))
+	store := sessions.NewCookieStore([]byte(config.SecretKey))
 
 	// It will be available to all handlers as *sessions.CookieStore
 	m.Map(store)
 
-	// It will be available to all handlers as *r.Session
+	// It will be available to all handlers as *connection *Connection
 	m.Map(DB)
 
 	// It will be available to all handlers as *Config
@@ -67,14 +57,14 @@ func main() {
 	m.Post("/new_token", AuthRequired, RequestNewToken)
 
 	// Home
-	m.Get("/", func(cs *s.CookieStore, req *h.Request, w h.ResponseWriter, connection *Connection) {
+	m.Get("/", func(cs *sessions.CookieStore, req *http.Request, w http.ResponseWriter, connection *Connection) {
 		if GetUserID(cs, req, connection) == "" {
 			LoginHandler(req, w)
 		}
 	}, IndexHandler)
 
 	csrfHandler := nosurf.New(m)
-	csrfHandler.SetFailureHandler(h.HandlerFunc(CsrfFailHandler))
+	csrfHandler.SetFailureHandler(http.HandlerFunc(CsrfFailHandler))
 
-	h.ListenAndServe(config.Port, csrfHandler)
+	http.ListenAndServe(config.Port, csrfHandler)
 }
