@@ -408,6 +408,39 @@ function closeEditBookmarkForm(form) {
     document.getElementById('toggle_edit_form').className = 'button-action hidden';
 }
 
+function updateBookmarks(response, list, tag) {
+				if (response.error) {
+								showAlert(response.message, 'error');
+				} else {
+								data = response.data;
+								list.className = 'browsing_tag_' + tag;
+								if (data.length > 0) {
+												list.innerHTML = '';
+												for (i = 0; i < data.length; i++) {
+																list.innerHTML += renderBookmark(data[i].id,
+																								data[i].Title,
+																								data[i].Url,
+																								data[i].Tags.join(', '),
+																								data[i].Date,
+																								true);
+												}
+
+												document.getElementById('back-index').className = '';
+
+												if (data.length == 50) {
+																document.getElementById('load-more').onclick = function() {
+																				loadMore(1);
+																				return false;
+																};
+												} else {
+																document.getElementById('load-more').style.display = 'none';
+												}
+								} else {
+												showAlert('There are no bookmarks for tag "' + tag + '"', 'info')
+								}
+				}
+}
+
 function getBookmarksForTag(tag) {
     var form = document.getElementById('bookmark-add'),
         token = form.csrf_token.value,
@@ -418,38 +451,8 @@ function getBookmarksForTag(tag) {
         'GET',
         '/tag/' + tag + '/0',
         '',
-        function(response) {
-            if (response.error) {
-                showAlert(response.message, 'error');
-            } else {
-                data = response.data;
-                list.className = 'browsing_tag_' + tag;
-                if (data.length > 0) {
-                    list.innerHTML = '';
-                    for (i = 0; i < data.length; i++) {
-                        list.innerHTML += renderBookmark(data[i].id,
-                                                        data[i].Title,
-                                                        data[i].Url,
-                                                        data[i].Tags.join(', '),
-                                                        data[i].Date,
-                                                        true);
-                    }
-                    
-                    document.getElementById('back-index').className = '';
-                    
-                    if (data.length == 50) {
-                        document.getElementById('load-more').onclick = function() {
-                            loadMore(1);
-                            return false;
-                        };
-                    } else {
-                        document.getElementById('load-more').style.display = 'none';
-                    }
-                } else {
-                    showAlert('There are no bookmarks for tag "' + tag + '"', 'info')
-                }
-            }
-        },
+				function(response) {
+				updateBookmarks(response, list, tag)},
         token
     );
 }

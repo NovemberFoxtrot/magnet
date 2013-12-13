@@ -11,4 +11,6 @@
 		if (actual !== tests[i][1]) {
 			document.write("expected " + actual + " to equal " + tests[i][0] + "<br\>");
 		}
-  }
+ }
+
+document.write(getBookmarksForTag("news"));
