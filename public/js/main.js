@@ -9,11 +9,17 @@ function lock_and_load(element, func) {
   }
 }
 
+function lock_and_submit(element, func) {
+  if (null !== document.getElementById(element)) {
+  	document.getElementById(element).onsubmit = func;
+  }
+}
+
 function theLockAndLoad() {
 	console.log("lock n' load");
 
- 	lock_and_load('browseAll', browseAll);
-  lock_and_load('access-form', submitAccessForm);
+  lock_and_load('browseAll', browseAll);
+  lock_and_submit('access-form', submitAccessForm);
   lock_and_load('no-account', accessFormChangeMode);
   lock_and_load('bookmark-add', submitNewBookmark);
   lock_and_load('url', toggleBookmarkForm); // (true) true
@@ -30,7 +36,6 @@ function theLockAndLoad() {
 var heightCallback = function() {
     var docHeight = document.body.scrollHeight;
 
-		// Hmmm
     if (null !== document.getElementById('left-side')) {
       document.getElementById('left-side').style.height = docHeight + 'px';
 		}
@@ -96,13 +101,12 @@ function escapeHTMLEntities(str) {
 }
 
 function submitAccessForm() {
-    var form = document.getElementById('access-form');
-
-    var mail = form.email.value;
-    var username = form.username.value;
-    var password = form.password.value;
-    var token = form.csrf_token.value;
-    var data = 'username=' + username;
+    var form = document.getElementById('access-form'),
+    mail = form.email.value,
+    username = form.username.value,
+    password = form.password.value,
+    token = form.csrf_token.value,
+    data = 'username=' + username;
 
     data += '&password=' + password;
 
@@ -131,6 +135,8 @@ function submitAccessForm() {
         },
         token
     );
+
+	return false;
 }
 
 function submitNewBookmarkResponse(response, tags) {
