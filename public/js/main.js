@@ -265,7 +265,12 @@ function appendTag(ulNode, tag, tagCount) {
 
 function updateTags(tags, deleteTags) {
 		var tagArray,
-		ulNode;
+		ulNode,
+		tagList,
+		newTags,
+		i,
+		tag,
+		tagCount;
 
     if (tags.trim() !== '') {
         tagArray = tagsToArray(tags);
