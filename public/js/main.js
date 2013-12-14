@@ -18,10 +18,12 @@ function lock_and_submit(element, func) {
 function theLockAndLoad() {
 	console.log("lock n' load");
 
-  lock_and_load('browseAll', browseAll);
   lock_and_submit('access-form', submitAccessForm);
-  lock_and_load('no-account', accessFormChangeMode);
   lock_and_submit('bookmark-add', submitNewBookmark);
+  lock_and_submit('search-form', searchBookmarks); // (this.search_query.value)
+
+  lock_and_load('browseAll', browseAll);
+  lock_and_load('no-account', accessFormChangeMode);
   lock_and_load('url', toggleBookmarkForm); // (true) true
   lock_and_load('toggle_edit_form', closeEditBookmarkForm); // (this.parentNode.parentNode)
 
@@ -552,8 +554,9 @@ function getBookmarksForTag(tag) {
     );
 }
 
-function searchBookmarksResponse(response) {
-        var i = 0;
+function searchBookmarksResponse(response, list, query) {
+        var i = 0,
+				data;
 
 				if (response.error) {
 								showAlert(response.message, 'error');
@@ -579,28 +582,34 @@ function searchBookmarksResponse(response) {
 																				return false;
 																};
 												} else {
-																document.getElementById('load-more').style.display = 'none';
+																if (null !== document.getElementById('load-more')) {
+																  document.getElementById('load-more').style.display = 'none';
+																}
 												}
 								} else {
-												showAlert('There are no bookmarks for tag "' + tag + '"', 'info')
+												showAlert('There are no bookmarks for "' + query + '"', 'info')
 								}
 				}
 }
 
-function searchBookmarks(query) {
+function searchBookmarks() {
     var form = document.getElementById('bookmark-add'),
         token = form.csrf_token.value,
-        list = document.getElementById('list-bookmarks');
+        list = document.getElementById('list-bookmarks'),
+  			query = document.getElementById('search-form').search_query.value;
+				
 
     AJAXRequest(
         'POST',
         '/search/0',
         'query=' + query,
         function(response) {
-					searchBookmarksResponse(response, list);
+					searchBookmarksResponse(response, list, query);
         },
         token
     );
+
+		return false;
 }
 
 function browseAllResponse(response, list) {
