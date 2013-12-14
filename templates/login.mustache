@@ -3,29 +3,29 @@
 
     <h2>Access magnet</h2>
 
-    <form id="access-form" onsubmit="submitAccessForm(this); return false;">
+    <form id="access-form">
         <div class="form-fields">
-        <div class="form-field">
+        	<div class="form-field">
             <label for="username">Username</label>
             <input type="text" id="username" name="username" class="form-input" required />
-        </div>
+        	</div>
         
-        <div class="form-field hidden" id="email-field">
+        	<div class="form-field hidden" id="email-field">
             <label for="email">Email</label>
             <input type="email" id="email" name="email" class="form-input" />
-        </div>
+        	</div>
         
-        <div class="form-field">
+        	<div class="form-field">
             <label for="password">Password</label>
             <input type="password" id="password" name="password" class="form-input" required />
-        </div>
+        	</div>
         </div>
         
         <input type="hidden" id="csrf_token" name="csrf_token" value="{{{csrf_token}}}" />
         
         <div class="form-buttons">
             <input type="submit" name="submit" id="submit-button" value="Login" />
-            <input type="button" id="no-account" value="I don't have an account" onclick="accessFormChangeMode();" />
+            <input type="button" id="no-account" value="I don't have an account" />
         </div>
     </form>
 </div>

@@ -3,11 +3,18 @@
 
 window.addEventListener('load', theLockAndLoad(), false);
 
-function theLockAndLoad() {
-	console.log("Locked and loaded");
+function lock_and_load(element, func) {
+  if (null !== document.getElementById(element)) {
+  	document.getElementById(element).onclick = func;
+  }
+}
 
-	// after clicking on a tag
-  document.getElementById('browseAll').onclick = browseAll;
+function theLockAndLoad() {
+	console.log("lock n' load");
+
+ 	lock_and_load('browseAll', browseAll);
+  lock_and_load('access-form', submitAccessForm);
+  lock_and_load('no-account', accessFormChangeMode);
 }
 
 var heightCallback = function() {
@@ -71,7 +78,9 @@ function escapeHTMLEntities(str) {
     });
 }
 
-function submitAccessForm(form) {
+function submitAccessForm() {
+    var form = document.getElementById('access-form');
+
     var mail = form.email.value;
     var username = form.username.value;
     var password = form.password.value;
