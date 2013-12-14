@@ -25,8 +25,6 @@ function theLockAndLoad() {
 
   lock_and_load('load-more-button', loadMore); // (1)
   lock_and_load('clickable', getBookmarksForTag); // ('{{Name}}')
-  lock_and_load('', ); //
-  lock_and_load('', ); //
 }
 
 var heightCallback = function() {
