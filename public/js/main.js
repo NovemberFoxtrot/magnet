@@ -15,6 +15,18 @@ function theLockAndLoad() {
  	lock_and_load('browseAll', browseAll);
   lock_and_load('access-form', submitAccessForm);
   lock_and_load('no-account', accessFormChangeMode);
+  lock_and_load('bookmark-add', submitNewBookmark);
+  lock_and_load('url', toggleBookmarkForm); // (true) true
+  lock_and_load('toggle_edit_form', closeEditBookmarkForm); // (this.parentNode.parentNode)
+
+	// need to loop over class?
+  lock_and_load('bookmark-edit', openEditBookmarkForm); // this.parentNode.parentNode
+  lock_and_load('bookmark-delete', deleteBookmark); // ('{{Id}}', this.parentNode.parentNode)
+
+  lock_and_load('load-more-button', loadMore); // (1)
+  lock_and_load('clickable', getBookmarksForTag); // ('{{Name}}')
+  lock_and_load('', ); //
+  lock_and_load('', ); //
 }
 
 var heightCallback = function() {

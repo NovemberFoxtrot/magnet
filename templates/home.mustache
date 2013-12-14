@@ -1,8 +1,8 @@
 <div id="left-side">
 	<div id="add-bookmark">
-		<form id="bookmark-add" onsubmit="submitNewBookmark(this); return false;">
+		<form id="bookmark-add">
 			<div class="form-field">
-				<span class="ion-link form-icon"></span><input type="text" name="url" id="url" placeholder="http://www.example.com" onclick="toggleBookmarkForm(true);" />
+				<span class="ion-link form-icon"></span><input type="text" name="url" id="url" placeholder="http://www.example.com"/>
 			</div>
 			<div class="form-field hidden">
 				<span class="ion-bookmark form-icon"></span><input type="text" name="title" id="title" placeholder="Title..." />
@@ -16,7 +16,7 @@
             <input type="hidden" name="bookmark_id" id="bookmark_id" value="" />
 			<div class="form-buttons">
 				<input type="submit" name="submit" id="submit-add-bookmark" value="Add bookmark" />
-				<button id="toggle_edit_form" class="button-action hidden" onclick="closeEditBookmarkForm(this.parentNode.parentNode); return false;"><span class="ion-close form-icon"></span>Discard changes</button>
+				<button id="toggle_edit_form" class="button-action hidden"><span class="ion-close form-icon"></span>Discard changes</button>
 			</div>
 		</form>
 	</div>
@@ -24,8 +24,8 @@
 		{{#bookmarks}}
 		<article id="bookmark_{{Id}}">
 			<div class="bookmark-actions">
-				<a href="#" class="bookmark-edit" onclick="openEditBookmarkForm(this.parentNode.parentNode); return false;"><span class="ion-levels"></span></a>
-				<a href="#" class="bookmark-delete" onclick="deleteBookmark('{{Id}}', this.parentNode.parentNode); return false;"><span class="ion-trash-b"></span></a>
+				<a href="#" class="bookmark-edit"><span class="ion-levels"></span></a>
+				<a href="#" class="bookmark-delete"><span class="ion-trash-b"></span></a>
 			</div>
 			<h3><a href="{{Url}}" target="_blank">{{Title}}</a></h3>
 			<div class="bookmark-url"><span class="ion-link bookmark-icon"></span> {{Url}}</div> <div class="bookmark-date"><span class="ion-clock bookmark-icon"></span> {{Date}}</div>
@@ -46,7 +46,7 @@
 	</section>
     {{#load_more}}
         <div id="load-more">
-            <button onclick="loadMore(1); return false;">Load more</button>
+            <button id="load-more-button">Load more</button>
         </div>
     {{/load_more}}
 </div>
@@ -65,7 +65,7 @@
 		<h3>Tags</h3>
 		<ul>
 		{{#tags}}
-        <li class="clickable" onclick="getBookmarksForTag('{{Name}}');">{{Name}} <span class="tag-count">({{Count}})</span></li>
+        <li class="clickable">{{Name}} <span class="tag-count">({{Count}})</span></li>
 		{{/tags}}
 		{{^tags}}
 		<li>No tags</li>
