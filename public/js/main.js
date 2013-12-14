@@ -21,7 +21,7 @@ function theLockAndLoad() {
   lock_and_load('browseAll', browseAll);
   lock_and_submit('access-form', submitAccessForm);
   lock_and_load('no-account', accessFormChangeMode);
-  lock_and_load('bookmark-add', submitNewBookmark);
+  lock_and_submit('bookmark-add', submitNewBookmark);
   lock_and_load('url', toggleBookmarkForm); // (true) true
   lock_and_load('toggle_edit_form', closeEditBookmarkForm); // (this.parentNode.parentNode)
 
@@ -163,13 +163,14 @@ function submitNewBookmarkResponse(response, tags) {
 	
 }
 
-function submitNewBookmark(form) {
-    var title = form.title,
-        url = form.url,
-        tags = form.tags,
-        token = form.csrf_token.value,
-        data = '',
-        errorMessages = [];
+function submitNewBookmark() {
+    var form = document.getElementById('bookmark-add'),
+    title = form.title,
+    url = form.url,
+    tags = form.tags,
+    token = form.csrf_token.value,
+    data = '',
+    errorMessages = [];
         
     if (title.value.length < 1) {
         errorMessages.push('Title cannot be blank.');
@@ -190,6 +191,8 @@ function submitNewBookmark(form) {
     data += '&tags=' + tags.value;
 
     AJAXRequest('POST', '/bookmark/new', data, function(response) { submitNewBookmarkResponse(response, tags); }, token);
+
+		return false;
 }
 
 function showAlert(msg, htmlClass) {
