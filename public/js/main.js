@@ -29,8 +29,15 @@ function theLockAndLoad() {
 
 var heightCallback = function() {
     var docHeight = document.body.scrollHeight;
-    document.getElementById('left-side').style.height = docHeight + 'px';
-    document.getElementById('left-side').style.minHeight = docHeight + 'px';
+
+		// Hmmm
+    if (null !== document.getElementById('left-side')) {
+      document.getElementById('left-side').style.height = docHeight + 'px';
+		}
+
+    if (null !== document.getElementById('left-side')) {
+      document.getElementById('left-side').style.minHeight = docHeight + 'px';
+		}
 };
 
 window.onload = heightCallback;
