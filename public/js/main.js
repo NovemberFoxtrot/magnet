@@ -209,8 +209,8 @@ function renderBookmark(bkId, title, url, tags, date, forceComplete) {
 
 	bookmarkHtml = ((!editing) ? '<article id="bookmark_' + bkId + '">' : '') + 
         '<div class="bookmark-actions">' +
-		'<a href="#" class="bookmark-edit" onclick="openEditBookmarkForm(this.parentNode.parentNode); return false;"><span class="ion-levels"></span></a>' +
-		'<a href="#" class="bookmark-delete" onclick="deleteBookmark(\'' + bkId + '\', this.parentNode.parentNode); return false;"><span class="ion-trash-b"></span></a>' +
+		'<a href="#" class="bookmark-edit"><span class="ion-levels"></span></a>' +
+		'<a href="#" class="bookmark-delete"><span class="ion-trash-b"></span></a>' +
 		'</div>' +
 		'<h3><a href="'+ url + '" target="_blank">' + title + '</a></h3>' +
 		'<div class="bookmark-url"><span class="ion-link bookmark-icon"></span> ' + url + '</div> ' + 
@@ -246,8 +246,7 @@ function getTagsFromBookmark(bookmarkElem) {
 
 function appendTag(ulNode, tag, tagCount) {
     if (tagCount === undefined) tagCount = 1;
-    ulNode.innerHTML += '<li class="clickable" onclick="getBookmarksForTag(\'' + 
-        tag + '\');">' + tag + ' <span class="tag-count">(' + tagCount + ')</span></li>';
+    ulNode.innerHTML += '<li class="clickable">' + tag + ' <span class="tag-count">(' + tagCount + ')</span></li>';
 }
 
 function updateTags(tags, deleteTags) {
