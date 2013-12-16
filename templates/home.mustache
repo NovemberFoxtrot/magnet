@@ -45,7 +45,7 @@
 		{{/bookmarks}}
 	</section>
     {{#load_more}}
-        <div id="load-more">
+        <div id="load-more" {{^load_more}}class="hidden"{{/load_more}}>
             <button id="load-more-button">Load more</button>
         </div>
     {{/load_more}}

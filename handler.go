@@ -88,7 +88,7 @@ func IndexHandler(req *http.Request, w http.ResponseWriter, cs *sessions.CookieS
 		"username":   username,
 	}
 
-	context["load_more"] = len(context["bookmarks"].([]Bookmark)) == 2
+	context["load_more"] = len(context["bookmarks"].([]Bookmark)) == 50
 
 	w.Write([]byte(mustache.RenderFileInLayout("templates/home.mustache", "templates/base.mustache", context)))
 }
