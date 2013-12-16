@@ -18,7 +18,6 @@
 
     if ([] !== nodes) {
 			for (var i = 0; i < nodes.length; ++i) {
-				console.log(nodes[i]);
         nodes[i].onclick = func;
       }
     }
@@ -363,7 +362,10 @@
     form.getElementsByClassName('form-buttons').className = 'form-buttons' + htmlClass;
   }
 
-  function deleteBookmark(id, elem) {
+  function deleteBookmark() {
+    var elem = this.parentNode.parentNode,
+		id = elem.id.split("_")[1];
+
     if (confirm("Are you sure you want to delete that?")) {
       AJAXRequest(
         'DELETE',
@@ -544,15 +546,7 @@
       i = 0,
 			tag = this.innerHTML.split(" ")[0];
 
-    AJAXRequest(
-      'GET',
-      '/tag/' + tag + '/0',
-      '',
-      function (response) {
-        updateBookmarks(response, list, tag)
-      },
-      token
-    );
+    AJAXRequest('GET', '/tag/' + tag + '/0', '', function (response) { updateBookmarks(response, list, tag); }, token);
   }
 
   function searchBookmarksResponse(response, list, query) {
