@@ -24,7 +24,7 @@
   }
 
   function theLockAndLoad() {
-    console.log("lock n' load");
+		console.log("lock n' load")
 
 		// forms
     lock_and_submit('access-form', submitAccessForm);
@@ -35,12 +35,12 @@
     lock_and_load('browseAll', browseAll);
     lock_and_load('no-account', accessFormChangeMode);
     lock_and_load('url', toggleBookmarkForm); // (true) true
-    lock_and_load('toggle_edit_form', closeEditBookmarkForm); // (this.parentNode.parentNode)
+    lock_and_load('toggle_edit_form', closeEditBookmarkForm);
 
     // class click
-    lock_and_klass('bookmark-edit', openEditBookmarkForm); // this.parentNode.parentNode
-    lock_and_klass('bookmark-delete', deleteBookmark); // ('{{Id}}', this.parentNode.parentNode)
-    lock_and_klass('clickable', getBookmarksForTag); // ('{{Name}}')
+    lock_and_klass('bookmark-edit', openEditBookmarkForm);
+    lock_and_klass('bookmark-delete', deleteBookmark);
+    lock_and_klass('clickable', getBookmarksForTag);
 
     lock_and_load('load-more-button', loadMore); // (1)
   }
@@ -544,6 +544,7 @@
       } else {
         showAlert('There are no bookmarks for tag "' + tag + '"', 'info')
       }
+			theLockAndLoad();
     }
   }
 
@@ -650,17 +651,18 @@
       } else {
         showAlert('There are no bookmarks to display.', 'info')
       }
+			theLockAndLoad();
     }
   }
 
   function browseAll() {
+		console.log("all");
+
     var form = document.getElementById('bookmark-add'),
       token = form.csrf_token.value,
       list = document.getElementById('list-bookmarks');
 
-    AJAXRequest('GET', '/bookmarks/0', '', function (response) {
-      browseAllResponse(response, list);
-    }, token);
+    AJAXRequest('GET', '/bookmarks/0', '', function (response) { browseAllResponse(response, list); }, token);
   }
 
   function loadMoreResponse(response, list) {
