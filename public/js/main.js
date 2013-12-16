@@ -385,7 +385,13 @@
     }
   }
 
-  function editBookmarkResponse(response, oldTags, tags, data) {
+  function editBookmarkResponse(response, oldTags, tags, data, bookmarkId, date, form) {
+		var oldTagsArray,
+		tagsArray,
+		tagsToAdd,
+		tagsToDelete,
+		currBk;
+
     if (response.error) {
       showAlert(response.message, 'error');
     } else {
@@ -460,12 +466,13 @@
     data += '&url=' + url.value;
     data += '&tags=' + tags.value;
 
-    AJAXRequest('POST', '/bookmark/update/' + bookmarkId.value, data, function (response) { editBookmarkResponse(response, oldTags, tags, data); }, token);
+    AJAXRequest('POST', '/bookmark/update/' + bookmarkId.value, data, function (response) { editBookmarkResponse(response, oldTags, tags, data, bookmarkId, date, form); }, token);
   }
 
-  function openEditBookmarkForm(bookmark) {
+  function openEditBookmarkForm() {
     var form = document.getElementById('bookmark-add'),
-      dateElemContent;
+      dateElemContent,
+		bookmark = this.parentNode.parentNode;
 
     toggleBookmarkForm(true);
 
