@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/hoisie/mustache"
 	"github.com/justinas/nosurf"
+	"log"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -109,17 +110,28 @@ func NewBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.C
 		WriteJSONResponse(200, true, "The url is not valid or the title is empty.", req, w)
 	} else {
 		_, userID := GetUserData(cs, req)
+
 		if req.PostFormValue("tags") != "" {
 			bookmark["Tags"] = strings.Split(req.PostFormValue("tags"), ",")
 			for i, v := range bookmark["Tags"].([]string) {
 				bookmark["Tags"].([]string)[i] = strings.ToLower(strings.TrimSpace(v))
 			}
 		}
+
 		bookmark["Created"] = float64(time.Now().Unix())
 		bookmark["Date"] = time.Unix(int64(bookmark["Created"].(float64)), 0).Format("Jan 2, 2006 at 3:04pm")
 		bookmark["User"] = userID
 
+		str := FetchUrl(bookmark["Url"].(string))
+		left := strings.Index(str, "<title>")
+		right := strings.Index(str, "</title>")
+		bookmark["Title"] = str[left+len("<title>") : right]
+
+		log.Println(bookmark)
+
 		response, _ := connection.NewBookmark(userID, bookmark)
+
+		log.Println(response)
 
 		if response.Inserted > 0 {
 			WriteJSONResponse(200, false, response.GeneratedKeys[0], req, w)
