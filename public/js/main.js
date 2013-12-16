@@ -173,6 +173,7 @@
       url.value = '';
       tags.value = '';
       toggleBookmarkForm(false);
+			theLockAndLoad();
     }
 
   }
