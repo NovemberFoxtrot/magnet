@@ -116,6 +116,8 @@
         if (response.error) {
             showAlert(response.message, 'error');
         } else {
+						console.log(response);
+
             showAlert('Bookmark added successfully.', 'success');
             empty = document.getElementsByClassName('empty');
             if (empty.length > 0) {
@@ -123,7 +125,7 @@
             }
 
             lb = document.getElementById('list-bookmarks');
-            lb.innerHTML = renderBookmark(response.message, title.value, url.value, tags.value) + lb.innerHTML;
+            lb.innerHTML = renderBookmark(response.message, response.data.Title, url.value, tags.value) + lb.innerHTML;
             updateTags(tags.value);
             title.value = '';
             url.value = '';

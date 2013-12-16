@@ -134,7 +134,7 @@ func NewBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.C
 		log.Println(response)
 
 		if response.Inserted > 0 {
-			WriteJSONResponse(200, false, response.GeneratedKeys[0], req, w)
+			JSONDataResponse(200, false, bookmark, req, w)
 		} else {
 			WriteJSONResponse(200, true, "Error inserting bookmark.", req, w)
 		}
