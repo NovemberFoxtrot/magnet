@@ -24,15 +24,13 @@
   }
 
   function theLockAndLoad() {
-		console.log("lock n' load")
-
 		// forms
     lock_and_submit('access-form', submitAccessForm);
     lock_and_submit('bookmark-add', submitNewBookmark);
     lock_and_submit('search-form', searchBookmarks);
 
 		// click
-    lock_and_load('browseAll', browseAll);
+    lock_and_load('browseALL', browseAll);
     lock_and_load('no-account', accessFormChangeMode);
     lock_and_load('url', toggleBookmarkForm); // (true) true
     lock_and_load('toggle_edit_form', closeEditBookmarkForm);
@@ -105,6 +103,8 @@
   }
 
   function escapeHTMLEntities(str) {
+		console.log(str);
+
     return str.replace(/[&<>]/g, function (entity) {
       return {
         '&': '&amp;',
@@ -617,7 +617,8 @@
   }
 
   function browseAllResponse(response, list) {
-    var i = 0;
+    var i = 0,
+		data;
 
     if (response.error) {
       showAlert(response.message, 'error');
@@ -629,7 +630,9 @@
       list.className = '';
       if (data.length > 0) {
         list.innerHTML = '';
+
         for (i = 0; i < data.length; i++) {
+					console.log(data[i]);
           list.innerHTML += renderBookmark(data[i].id,
             data[i].Title,
             data[i].Url,
@@ -656,8 +659,6 @@
   }
 
   function browseAll() {
-		console.log("all");
-
     var form = document.getElementById('bookmark-add'),
       token = form.csrf_token.value,
       list = document.getElementById('list-bookmarks');
