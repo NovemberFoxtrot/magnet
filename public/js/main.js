@@ -116,8 +116,6 @@
         if (response.error) {
             showAlert(response.message, 'error');
         } else {
-						console.log(response);
-
             showAlert('Bookmark added successfully.', 'success');
             empty = document.getElementsByClassName('empty');
             if (empty.length > 0) {
