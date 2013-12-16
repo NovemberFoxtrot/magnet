@@ -103,8 +103,6 @@
   }
 
   function escapeHTMLEntities(str) {
-		console.log(str);
-
     return str.replace(/[&<>]/g, function (entity) {
       return {
         '&': '&amp;',
@@ -632,7 +630,6 @@
         list.innerHTML = '';
 
         for (i = 0; i < data.length; i++) {
-					console.log(data[i]);
           list.innerHTML += renderBookmark(data[i].id,
             data[i].Title,
             data[i].Url,
@@ -672,7 +669,6 @@
       showAlert(response.message, 'error');
     } else {
       data = response.data;
-      console.log(data);
       if (data.length > 0) {
         for (i = 0; i < data.length; i++) {
           list.innerHTML += renderBookmark(data[i].id,
