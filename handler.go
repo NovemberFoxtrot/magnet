@@ -5,7 +5,6 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/hoisie/mustache"
 	"github.com/justinas/nosurf"
-	"log"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -124,7 +123,7 @@ func NewBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.C
 
 		str := FetchUrl(bookmark["Url"].(string))
 
-		if strints.Contains(str, "<title>") {
+		if strings.Contains(str, "<title>") {
 			left := strings.Index(str, "<title>")
 			right := strings.Index(str, "</title>")
 			bookmark["Title"] = str[left+len("<title>") : right]

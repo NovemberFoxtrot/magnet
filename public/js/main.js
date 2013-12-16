@@ -125,7 +125,6 @@
             lb = document.getElementById('list-bookmarks');
             lb.innerHTML = renderBookmark(response.message, response.data.Title, url.value, tags.value) + lb.innerHTML;
             updateTags(tags.value);
-            title.value = '';
             url.value = '';
             tags.value = '';
             toggleBookmarkForm(false);
@@ -136,16 +135,11 @@
 
     function submitNewBookmark() {
         var form = document.getElementById('bookmark-add'),
-            title = form.title,
             url = form.url,
             tags = form.tags,
             token = form.csrf_token.value,
             data = '',
             errorMessages = [];
-
-        if (title.value.length < 1) {
-            errorMessages.push('Title cannot be blank.');
-        }
 
         if (url.value.length < 5 || !(url.value.indexOf('http://') !== -1 || url.value.indexOf('https://') !== -1)) {
             errorMessages.push('Invalid url.');
@@ -156,7 +150,6 @@
             return;
         }
 
-        data += 'title=' + title.value;
         data += '&url=' + url.value;
         data += '&tags=' + tags.value;
 
