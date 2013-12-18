@@ -2,7 +2,7 @@
 (function() {
     "use strict";
 
-		var Bookmarks = [],
+		var Bookmarks,
 		Tags,
 		App;
 
@@ -52,30 +52,34 @@
         form.getElementsByClassName('form-buttons').className = 'form-buttons' + htmlClass;
     };
 
-    function openEditBookmarkForm() {
+    App.prototype.editBookmark = function () {
         var form = document.getElementById('bookmark-add'),
             dateElemContent,
-            bookmark = this.parentNode.parentNode;
+            bookmark = this.parentNode.parentNode,
+						i = 0;
 
         app.toggleBookmarkForm(true);
 
-/*
-        form.onsubmit = function() {
-            editBookmark(form);
-            return false;
-        }
-*/
+				var bookmark;
+
+				var bookmarkUUID = bookmark.id.substring(bookmark.id.indexOf('_') + 1);
+
+				for (i = 0; i < Bookmarks.length; i++) {
+					if ( Bookmarks[i].uuid === bookmarkUUID) {
+						bookmark = Bookmarks[i];
+					} 
+				}
+
         form.submit.value = 'Edit bookmark';
+        form.tags.value = bookmark.tags;
+        form.bookmark_id.value = bookmark.uuid
+        form.old_tags.value = bookmark.tags;
+        form.title.value = bookmark.title;
+        form.url.value = bookmark.url;
 
-        form.tags.value = getTagsFromBookmark(bookmark);
-        form.bookmark_id.value = bookmark.id.substring(bookmark.id.indexOf('_') + 1);
-        form.old_tags.value = form.tags.value;
-        form.title.value = bookmark.getElementsByTagName('h3')[0].getElementsByTagName('a')[0].innerHTML;
-        form.url.value = bookmark.getElementsByClassName('bookmark-url')[0].innerHTML.split(' ')[3];
+        // dateElemContent = bookmark.date; //getElementsByClassName('bookmark-date')[0].innerHTML;
 
-        dateElemContent = bookmark.getElementsByClassName('bookmark-date')[0].innerHTML;
-
-        form.bookmark_date.value = dateElemContent.substring(dateElemContent.lastIndexOf('>') + 2);
+        form.bookmark_date.value = bookmark.date // dateElemContent.substring(dateElemContent.lastIndexOf('>') + 2);
 
         document.getElementById('toggle_edit_form').className = 'button-action';
 
