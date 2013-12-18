@@ -17,7 +17,6 @@
     window.onload = heightCallback;
     window.onresize = heightCallback;
 
-
     function accessFormChangeMode() {
         var submit = document.getElementById('submit-button'),
             modeChanger = document.getElementById('no-account'),
