@@ -2,6 +2,12 @@
 (function() {
     "use strict";
 
+		var Bookmarks = [],
+		Tags,
+		App;
+
+		/* ==== APP ==== */
+
 		var heightCallback = function() {
         var docHeight = document.body.scrollHeight;
 
@@ -17,23 +23,81 @@
     window.onload = heightCallback;
     window.onresize = heightCallback;
 
-    function accessFormChangeMode() {
-        var submit = document.getElementById('submit-button'),
-            modeChanger = document.getElementById('no-account'),
-            email = document.getElementById('email-field');
+		var App = function() {
+			this.getFormValues();
+		};
 
-        if (submit.value === 'Login') {
-            email.className = 'form-field';
-            submit.value = 'Sign up';
-            modeChanger.value = 'I have an account';
-        } else {
-            email.className = 'form-field hidden';
-            submit.value = 'Login';
-            modeChanger.value = 'I don\'t have an account';
+		App.prototype.getFormValues = function () {
+      this.form = document.getElementById('bookmark-add'),
+      this.title = this.form.title,
+      this.url = this.form.url,
+      this.tags = this.form.tags,
+      this.token = this.form.csrf_token.value;
+		};
+
+		App.prototype.render = function (max) {
+		};
+
+    App.prototype.toggleBookmarkForm = function (open) {
+        var form = document.getElementById('bookmark-add'),
+            fields = form.getElementsByClassName('form-field'),
+            htmlClass = (open) ? '' : ' hidden';
+
+        for (var i in fields) {
+            if (i > 0) {
+                fields[i].className = 'form-field' + htmlClass;
+            }
         }
+
+        form.getElementsByClassName('form-buttons').className = 'form-buttons' + htmlClass;
+    };
+
+    function openEditBookmarkForm() {
+        var form = document.getElementById('bookmark-add'),
+            dateElemContent,
+            bookmark = this.parentNode.parentNode;
+
+        app.toggleBookmarkForm(true);
+
+/*
+        form.onsubmit = function() {
+            editBookmark(form);
+            return false;
+        }
+*/
+        form.submit.value = 'Edit bookmark';
+
+        form.tags.value = getTagsFromBookmark(bookmark);
+        form.bookmark_id.value = bookmark.id.substring(bookmark.id.indexOf('_') + 1);
+        form.old_tags.value = form.tags.value;
+        form.title.value = bookmark.getElementsByTagName('h3')[0].getElementsByTagName('a')[0].innerHTML;
+        form.url.value = bookmark.getElementsByClassName('bookmark-url')[0].innerHTML.split(' ')[3];
+
+        dateElemContent = bookmark.getElementsByClassName('bookmark-date')[0].innerHTML;
+
+        form.bookmark_date.value = dateElemContent.substring(dateElemContent.lastIndexOf('>') + 2);
+
+        document.getElementById('toggle_edit_form').className = 'button-action';
+
+        window.scrollTo(0, 0);
     }
 
-    function AJAXRequest(method, url, data, callback, token) {
+		App.prototype.closeForm = function () {
+/*
+      this.form.onsubmit = function() {
+        submitNewBookmark(this.form);
+        return false;
+      }
+*/
+      this.form.submit.value = 'Add bookmark';
+      this.form.tags.value = '';
+      this.form.title.value = '';
+      this.form.url.value = '';
+
+      document.getElementById('toggle_edit_form').className = 'button-action hidden';
+		};
+
+    App.prototype.AJAXRequest = function (method, url, data, callback, token) {
         var xhr = new XMLHttpRequest(),
             response;
 
@@ -53,13 +117,13 @@
         xhr.send(data);
     }
 
-    function refresh() {
+    App.prototype.refresh = function () {
         window.setTimeout(function() {
             window.location.href = window.location.href;
         }, 3000);
     }
 
-    function escapeHTMLEntities(str) {
+    App.prototype.escapeHTMLEntities = function (str) {
         return str.replace(/[&<>]/g, function(entity) {
             return {
                 '&': '&amp;',
@@ -67,6 +131,22 @@
                 '>': '&gt;'
             } || entity;
         });
+    }
+
+    function accessFormChangeMode() {
+        var submit = document.getElementById('submit-button'),
+            modeChanger = document.getElementById('no-account'),
+            email = document.getElementById('email-field');
+
+        if (submit.value === 'Login') {
+            email.className = 'form-field';
+            submit.value = 'Sign up';
+            modeChanger.value = 'I have an account';
+        } else {
+            email.className = 'form-field hidden';
+            submit.value = 'Login';
+            modeChanger.value = 'I don\'t have an account';
+        }
     }
 
     function submitAccessForm() {
@@ -83,23 +163,23 @@
             data += '&email=' + mail;
         }
 
-        AJAXRequest(
+        app.AJAXRequest(
             'POST',
             form.submit.value === 'Login' ? '/login' : '/signup',
             data,
             form.submit.value === 'Login' ? function(response) {
                 if (response.error) {
-                    showAlert(response.message, 'error');
+                    app.showAlert(response.message, 'error');
                 } else {
-                    showAlert('You have been successfully logged in!', 'success');
-                    refresh();
+                    app.showAlert('You have been successfully logged in!', 'success');
+                    app.refresh();
                 }
             } : function(response) {
                 if (response.error) {
-                    showAlert(response.message, 'error');
+                    app.showAlert(response.message, 'error');
                 } else {
-                    showAlert('You have been successfully signed up!', 'success');
-                    refresh();
+                    app.showAlert('You have been successfully signed up!', 'success');
+                    app.refresh();
                 }
             },
             token
@@ -108,65 +188,7 @@
         return false;
     }
 
-    function submitNewBookmarkResponse(response, tags) {
-        var empty,
-            lb;
-
-        if (response.error) {
-            showAlert(response.message, 'error');
-        } else {
-            showAlert('Bookmark added successfully.', 'success');
-            empty = document.getElementsByClassName('empty');
-            if (empty.length > 0) {
-                empty[0].style.display = 'none';
-            }
-
-            lb = document.getElementById('list-bookmarks');
-            lb.innerHTML = renderBookmark(response.message, title.value, url.value, tags.value) + lb.innerHTML;
-            updateTags(tags.value);
-            title.value = '';
-            url.value = '';
-            tags.value = '';
-            toggleBookmarkForm(false);
-            theLockAndLoad();
-        }
-
-    }
-
-    function submitNewBookmark() {
-        var form = document.getElementById('bookmark-add'),
-            title = form.title,
-            url = form.url,
-            tags = form.tags,
-            token = form.csrf_token.value,
-            data = '',
-            errorMessages = [];
-
-        if (title.value.length < 1) {
-            errorMessages.push('Title cannot be blank.');
-        }
-
-        if (url.value.length < 5 || !(url.value.indexOf('http://') !== -1 || url.value.indexOf('https://') !== -1)) {
-            errorMessages.push('Invalid url.');
-        }
-
-        if (errorMessages.length > 0) {
-            showAlert(errorMessages.join(' '), 'error');
-            return;
-        }
-
-        data += 'title=' + title.value;
-        data += '&url=' + url.value;
-        data += '&tags=' + tags.value;
-
-        AJAXRequest('POST', '/bookmark/new', data, function(response) {
-            submitNewBookmarkResponse(response, tags);
-        }, token);
-
-        return false;
-    }
-
-    function showAlert(msg, htmlClass) {
+    App.prototype.showAlert = function (msg, htmlClass) {
         var alert = document.getElementById('alert');
         alert.className = htmlClass;
         alert.innerHTML = msg;
@@ -177,43 +199,146 @@
         }, 2000);
     }
 
-    function renderBookmark(bkId, title, url, tags, date, forceComplete) {
-        var editing = true && !forceComplete,
-            bookmarkHtml,
-            tagArray,
-            i;
+    App.prototype.searchBookmarks = function () {
+        var form = document.getElementById('bookmark-add'),
+            token = form.csrf_token.value,
+            list = document.getElementById('list-bookmarks'),
+            query = document.getElementById('search-form').search_query.value;
 
-        if (date === undefined) {
-            date = 'Just now';
-            editing = false;
-        }
+        app.AJAXRequest( 'POST', '/search/0', 'query=' + query, function(response) { searchBookmarksResponse(response, list, query); }, token );
 
-        title = escapeHTMLEntities(title);
-        url = escapeHTMLEntities(url);
-        tags = escapeHTMLEntities(tags);
+        return false;
+    }
 
-        bookmarkHtml = ((!editing) ? '<article id="bookmark_' + bkId + '">' : '') +
-            '<div class="bookmark-actions">' +
-            '<a href="#" class="bookmark-edit"><span class="ion-levels"></span></a>' +
-            '<a href="#" class="bookmark-delete"><span class="ion-trash-b"></span></a>' +
-            '</div>' +
-            '<h3><a href="' + url + '" target="_blank">' + title + '</a></h3>' +
-            '<div class="bookmark-url"><span class="ion-link bookmark-icon"></span> ' + url + '</div> ' +
-            '<div class="bookmark-date"><span class="ion-clock bookmark-icon"></span> ' + date + '</div>' +
-            '<div class="bookmark-tags"><span class="ion-ios7-pricetag bookmark-icon"></span>';
-        if (tags.trim() === '') {
-            bookmarkHtml += '<span class="bookmark-tag">No tags</span>';
+    function browseAllResponse(response, list) {
+        var i = 0,
+            data;
+
+        if (response.error) {
+            app.showAlert(response.message, 'error');
         } else {
-            tagArray = tags.split(',');
-            for (i in tagArray) {
-                bookmarkHtml += '<span class="bookmark-tag">' + tagArray[i].trim().toLowerCase() + '</span>';
+            data = response.data;
+            if (list.className.indexOf('searching_') !== -1) {
+                document.getElementById('search_query').value = '';
+            }
+            list.className = '';
+            if (data.length > 0) {
+                list.innerHTML = '';
+
+                for (i = 0; i < data.length; i++) {
+                    list.innerHTML += renderBookmark(data[i].id,
+                        data[i].Title,
+                        data[i].Url,
+                        data[i].Tags.join(', '),
+                        data[i].Date,
+                        true);
+                }
+
+                document.getElementById('back-index').className = 'hidden';
+
+                if (data.length == 50) {
+                    document.getElementById('load-more').onclick = function() {
+                        loadMore(1);
+                        return false;
+                    };
+                } else {
+                    document.getElementById('load-more').style.display = 'none';
+                }
+            } else {
+                app.showAlert('There are no bookmarks to display.', 'info')
+            }
+            theLockAndLoad();
+        }
+    }
+
+    function browseAll() {
+        var form = document.getElementById('bookmark-add'),
+            token = form.csrf_token.value,
+            list = document.getElementById('list-bookmarks');
+
+        app.AJAXRequest('GET', '/bookmarks/0', '', function(response) {
+            browseAllResponse(response, list);
+        }, token);
+    }
+
+    function loadMoreResponse(response, list) {
+        var i = 0;
+        if (response.error) {
+            app.showAlert(response.message, 'error');
+        } else {
+            data = response.data;
+            if (data.length > 0) {
+                for (i = 0; i < data.length; i++) {
+                    list.innerHTML += renderBookmark(data[i].id,
+                        data[i].Title,
+                        data[i].Url,
+                        data[i].Tags.join(', '),
+                        data[i].Date,
+                        true);
+                }
+
+                if (data.length == 50) {
+                    document.getElementById('load-more').onclick = function() {
+                        loadMore(page + 1);
+                        return false;
+                    };
+                } else {
+                    document.getElementById('load-more').style.display = 'none';
+                }
+            } else {
+                app.showAlert('There are no bookmarks to display.', 'info')
             }
         }
 
-        bookmarkHtml += '</div>' + ((!editing) ? '</article>' : '');
-
-        return bookmarkHtml;
     }
+
+    function loadMore(page) {
+        var form = document.getElementById('bookmark-add'),
+            token = form.csrf_token.value,
+            list = document.getElementById('list-bookmarks'),
+            method,
+            queryData,
+            requestUrl,
+            i = 0;
+
+        if (list.className.indexOf('browsing_tag_') !== -1) {
+            method = 'GET';
+            requestUrl = '/tag/' + list.className.substring(list.className.indexOf('tag_') + 4) + '/' + page;
+            queryData = '';
+        } else if (list.className.indexOf('searching_') !== -1) {
+            method = 'POST';
+            requestUrl = '/search/' + page;
+            queryData = 'query=' + atob(list.className.substring(list.className.indexOf('_') + 1));
+        } else {
+            method = 'GET';
+            requestUrl = '/bookmarks/' + page;
+            queryData = '';
+        }
+
+        app.AJAXRequest(method, requestUrl, queryData, function(response) {
+            loadMoreResponse(response, list);
+        }, token);
+    }
+
+		App.prototype.openForm = function () {
+		};
+
+		var app = new App();
+
+		app.getFormValues();
+
+		/* ==== TAG ==== */
+
+		var Tag = function() {
+		};
+
+		Tag.prototype.say_hello = function () {
+			console.log("Hey");
+		};
+
+		Tag.prototype.getBookmarks = function () {
+			console.log("Hey");
+		};
 
     function getTagsFromBookmark(bookmarkElem) {
         var tagElems = bookmarkElem.getElementsByClassName('bookmark-tag'),
@@ -304,18 +429,120 @@
         return tagArray;
     }
 
-    function toggleBookmarkForm(open) {
-        var form = document.getElementById('bookmark-add'),
-            fields = form.getElementsByClassName('form-field'),
-            htmlClass = (open) ? '' : ' hidden';
+		/* ==== BOOKMARK ==== */
 
-        for (var i in fields) {
-            if (i > 0) {
-                fields[i].className = 'form-field' + htmlClass;
+		var Bookmark = function (title, url, tags) {
+      title = app.escapeHTMLEntities(title);
+      url = app.escapeHTMLEntities(url);
+      tags = app.escapeHTMLEntities(tags);
+		};
+
+		var b = new Bookmark("Duude");
+
+		Bookmark.prototype.say_hello = function () {
+			console.log("Hey");
+		};
+
+		Bookmark.prototype.update = function () {
+			console.log("Hey");
+		};
+
+		Bookmark.prototype.submit = function () {
+			console.log("Hey");
+		};
+
+		Bookmark.prototype.validate = function () {
+			var errorMessages = [];
+
+      if (this.title.length < 1) {
+          errorMessages.push('Title cannot be blank.');
+      }
+
+      if (this.url.length < 5 || !(this.url.indexOf('http://') !== -1 || this.url.indexOf('https://') !== -1)) {
+          errorMessages.push('Invalid url.');
+      }
+
+			return errorMessages;
+		};
+
+    function submitNewBookmark() {
+        var form = document.getElementById('bookmark-add'),
+            title = form.title,
+            url = form.url,
+            tags = form.tags,
+            token = form.csrf_token.value,
+            data = '',
+            errorMessages = [];
+
+				// errorMessages = bookmark.validate()
+				
+        if (errorMessages.length > 0) {
+            app.showAlert(errorMessages.join(' '), 'error');
+            return;
+        }
+
+        data += 'title=' + title.value;
+        data += '&url=' + url.value;
+        data += '&tags=' + tags.value;
+
+        app.AJAXRequest('POST', '/bookmark/new', data, function(response) { submitNewBookmarkResponse(response, tags); }, token);
+
+        return false;
+    }
+
+    function submitNewBookmarkResponse(response, tags) {
+        var empty,
+            lb;
+
+        if (response.error) {
+            app.showAlert(response.message, 'error');
+        } else {
+            app.showAlert('Bookmark added successfully.', 'success');
+            empty = document.getElementsByClassName('empty');
+            if (empty.length > 0) {
+                empty[0].style.display = 'none';
+            }
+
+            lb = document.getElementById('list-bookmarks');
+            lb.innerHTML = renderBookmark(response.message, title.value, url.value, tags.value) + lb.innerHTML;
+            updateTags(tags.value);
+            title.value = '';
+            url.value = '';
+            tags.value = '';
+            app.toggleBookmarkForm(false);
+            theLockAndLoad();
+        }
+    }
+
+    Bookmark.prototype.render = function() {
+				var i = 0;
+
+        if (this.date === undefined) {
+            this.date = 'Just now';
+        }
+
+        bookmarkHtml = '<article id="bookmark_' + this.uuid + '">' +
+            '<div class="bookmark-actions">' +
+            '<a href="#" class="bookmark-edit"><span class="ion-levels"></span></a>' +
+            '<a href="#" class="bookmark-delete"><span class="ion-trash-b"></span></a>' +
+            '</div>' +
+            '<h3><a href="' + this.url + '" target="_blank">' + this.title + '</a></h3>' +
+            '<div class="bookmark-url"><span class="ion-link bookmark-icon"></span> ' + this.url + '</div> ' +
+            '<div class="bookmark-date"><span class="ion-clock bookmark-icon"></span> ' + this.date + '</div>' +
+            '<div class="bookmark-tags"><span class="ion-ios7-pricetag bookmark-icon"></span>';
+
+        if (tags.length === 0) {
+            bookmarkHtml += '<span class="bookmark-tag">No tags</span>';
+        } else {
+            for (i = 0; i < this.tags.length; ++i) {
+                // bookmarkHtml += '<span class="bookmark-tag">' + this.tags[i].trim().toLowerCase() + '</span>';
+                bookmarkHtml += '<span class="bookmark-tag">' + this.tags[i] + '</span>';
             }
         }
 
-        form.getElementsByClassName('form-buttons').className = 'form-buttons' + htmlClass;
+        bookmarkHtml += '</div></article>';
+
+        return bookmarkHtml;
     }
 
     function deleteBookmark() {
@@ -323,15 +550,15 @@
             id = elem.id.split("_")[1];
 
         if (confirm("Are you sure you want to delete that?")) {
-            AJAXRequest(
+            app.AJAXRequest(
                 'DELETE',
                 '/bookmark/delete/' + id,
                 '',
                 function(response) {
                     if (response.error) {
-                        showAlert(response.message, 'error');
+                        app.showAlert(response.message, 'error');
                     } else {
-                        showAlert('Bookmark deleted successfully.', 'success');
+                        app.showAlert('Bookmark deleted successfully.', 'success');
                         elem.style.display = 'none';
                         updateTags(getTagsFromBookmark(elem), true);
                     }
@@ -349,9 +576,9 @@
             currBk;
 
         if (response.error) {
-            showAlert(response.message, 'error');
+            app.showAlert(response.message, 'error');
         } else {
-            showAlert('Bookmark updated successfully.', 'success');
+            app.showAlert('Bookmark updated successfully.', 'success');
             // Update tags
             if (tags.value !== '') {
                 if (oldTags.value === '') {
@@ -386,11 +613,16 @@
                 // Remove the tags
                 updateTags(oldTags.value, true);
             }
+
             currBk = document.getElementById('bookmark_' + bookmarkId.value);
             currBk.innerHTML = renderBookmark(bookmarkId.value, title.value, url.value, tags.value, date.value);
-            closeEditBookmarkForm(form);
+
+            app.closeForm();
+
             var viewportOffset = currBk.getBoundingClientRect();
+
             window.scrollTo(0, viewportOffset.top);
+
             theLockAndLoad();
         }
     }
@@ -406,65 +638,25 @@
             data = '',
             errorMessages = [];
 
-        if (title.value.length < 1) {
-            errorMessages.push('Title cannot be blank.');
-        }
+				var bookmark = new Bookmark(title, url)
+				var errors = bookmark.validate();
 
-        if (url.value.length < 5 || !(url.value.indexOf('http://') !== -1 || url.value.indexOf('https://') !== -1)) {
-            errorMessages.push('Invalid url.');
-        }
+				console.log(bookmark)
 
-        if (errorMessages.length > 0) {
-            showAlert(errorMessages.join(' '), 'error');
-            return;
-        }
+				if (errors.length > 0) {
+          app.showAlert(errorMessages.join(' '), 'error');
+          return;
+				}
+
+				// bookmark.sendUpdate();
 
         data += 'title=' + title.value;
         data += '&url=' + url.value;
         data += '&tags=' + tags.value;
 
-        AJAXRequest('POST', '/bookmark/update/' + bookmarkId.value, data, function(response) {
+        app.AJAXRequest('POST', '/bookmark/update/' + bookmarkId.value, data, function(response) {
             editBookmarkResponse(response, oldTags, tags, data, bookmarkId, date, form);
         }, token);
-    }
-
-    function openEditBookmarkForm() {
-        var form = document.getElementById('bookmark-add'),
-            dateElemContent,
-            bookmark = this.parentNode.parentNode;
-
-        toggleBookmarkForm(true);
-
-        form.onsubmit = function() {
-            editBookmark(form);
-            return false;
-        }
-
-        form.submit.value = 'Edit bookmark';
-        form.tags.value = getTagsFromBookmark(bookmark);
-        form.bookmark_id.value = bookmark.id.substring(bookmark.id.indexOf('_') + 1);
-        form.old_tags.value = form.tags.value;
-        form.title.value = bookmark.getElementsByTagName('h3')[0].getElementsByTagName('a')[0].innerHTML;
-        form.url.value = bookmark.getElementsByClassName('bookmark-url')[0].innerHTML.split(' ')[3];
-        dateElemContent = bookmark.getElementsByClassName('bookmark-date')[0].innerHTML;
-        form.bookmark_date.value = dateElemContent.substring(dateElemContent.lastIndexOf('>') + 2);
-        document.getElementById('toggle_edit_form').className = 'button-action';
-
-        window.scrollTo(0, 0);
-    }
-
-    function closeEditBookmarkForm(form) {
-        form.onsubmit = function() {
-            submitNewBookmark(form);
-            return false;
-        }
-
-        form.submit.value = 'Add bookmark';
-        form.tags.value = '';
-        form.title.value = '';
-        form.url.value = '';
-
-        document.getElementById('toggle_edit_form').className = 'button-action hidden';
     }
 
     function updateBookmarks(response, list, tag) {
@@ -472,7 +664,7 @@
             i = 0;
 
         if (response.error) {
-            showAlert(response.message, 'error');
+            app.showAlert(response.message, 'error');
         } else {
             data = response.data;
             list.className = 'browsing_tag_' + tag;
@@ -500,7 +692,7 @@
                     }
                 }
             } else {
-                showAlert('There are no bookmarks for tag "' + tag + '"', 'info')
+                app.showAlert('There are no bookmarks for tag "' + tag + '"', 'info')
             }
             theLockAndLoad();
         }
@@ -513,7 +705,7 @@
             i = 0,
             tag = this.innerHTML.split(" ")[0];
 
-        AJAXRequest('GET', '/tag/' + tag + '/0', '', function(response) {
+        app.AJAXRequest('GET', '/tag/' + tag + '/0', '', function(response) {
             updateBookmarks(response, list, tag);
         }, token);
     }
@@ -523,7 +715,7 @@
             data;
 
         if (response.error) {
-            showAlert(response.message, 'error');
+            app.showAlert(response.message, 'error');
         } else {
             data = response.data;
             list.className = 'searching_' + btoa(query);
@@ -551,140 +743,11 @@
                     }
                 }
             } else {
-                showAlert('There are no bookmarks for "' + query + '"', 'info')
+                app.showAlert('There are no bookmarks for "' + query + '"', 'info')
             }
         }
     }
 
-    function searchBookmarks() {
-        var form = document.getElementById('bookmark-add'),
-            token = form.csrf_token.value,
-            list = document.getElementById('list-bookmarks'),
-            query = document.getElementById('search-form').search_query.value;
-
-
-        AJAXRequest(
-            'POST',
-            '/search/0',
-            'query=' + query,
-            function(response) {
-                searchBookmarksResponse(response, list, query);
-            },
-            token
-        );
-
-        return false;
-    }
-
-    function browseAllResponse(response, list) {
-        var i = 0,
-            data;
-
-        if (response.error) {
-            showAlert(response.message, 'error');
-        } else {
-            data = response.data;
-            if (list.className.indexOf('searching_') !== -1) {
-                document.getElementById('search_query').value = '';
-            }
-            list.className = '';
-            if (data.length > 0) {
-                list.innerHTML = '';
-
-                for (i = 0; i < data.length; i++) {
-                    list.innerHTML += renderBookmark(data[i].id,
-                        data[i].Title,
-                        data[i].Url,
-                        data[i].Tags.join(', '),
-                        data[i].Date,
-                        true);
-                }
-
-                document.getElementById('back-index').className = 'hidden';
-
-                if (data.length == 50) {
-                    document.getElementById('load-more').onclick = function() {
-                        loadMore(1);
-                        return false;
-                    };
-                } else {
-                    document.getElementById('load-more').style.display = 'none';
-                }
-            } else {
-                showAlert('There are no bookmarks to display.', 'info')
-            }
-            theLockAndLoad();
-        }
-    }
-
-    function browseAll() {
-        var form = document.getElementById('bookmark-add'),
-            token = form.csrf_token.value,
-            list = document.getElementById('list-bookmarks');
-
-        AJAXRequest('GET', '/bookmarks/0', '', function(response) {
-            browseAllResponse(response, list);
-        }, token);
-    }
-
-    function loadMoreResponse(response, list) {
-        var i = 0;
-        if (response.error) {
-            showAlert(response.message, 'error');
-        } else {
-            data = response.data;
-            if (data.length > 0) {
-                for (i = 0; i < data.length; i++) {
-                    list.innerHTML += renderBookmark(data[i].id,
-                        data[i].Title,
-                        data[i].Url,
-                        data[i].Tags.join(', '),
-                        data[i].Date,
-                        true);
-                }
-
-                if (data.length == 50) {
-                    document.getElementById('load-more').onclick = function() {
-                        loadMore(page + 1);
-                        return false;
-                    };
-                } else {
-                    document.getElementById('load-more').style.display = 'none';
-                }
-            } else {
-                showAlert('There are no bookmarks to display.', 'info')
-            }
-        }
-
-    }
-
-    function loadMore(page) {
-        var form = document.getElementById('bookmark-add'),
-            token = form.csrf_token.value,
-            list = document.getElementById('list-bookmarks'),
-            method,
-            queryData,
-            requestUrl,
-            i = 0;
-
-        if (list.className.indexOf('browsing_tag_') !== -1) {
-            method = 'GET';
-            requestUrl = '/tag/' + list.className.substring(list.className.indexOf('tag_') + 4) + '/' + page;
-            queryData = '';
-        } else if (list.className.indexOf('searching_') !== -1) {
-            method = 'POST';
-            requestUrl = '/search/' + page;
-            queryData = 'query=' + atob(list.className.substring(list.className.indexOf('_') + 1));
-        } else {
-            method = 'GET';
-            requestUrl = '/bookmarks/' + page;
-            queryData = '';
-        }
-
-        AJAXRequest(method, requestUrl, queryData, function(response) {
-            loadMoreResponse(response, list);
-        }, token);
-    }
 
     function lock_and_load(element, func) {
         if (null !== document.getElementById(element)) {
@@ -710,23 +773,23 @@
     }
 
     function theLockAndLoad() {
-        // forms
-        lock_and_submit('access-form', submitAccessForm);
-        lock_and_submit('bookmark-add', submitNewBookmark);
-        lock_and_submit('search-form', searchBookmarks);
-
         // click
         lock_and_load('browseALL', browseAll);
         lock_and_load('no-account', accessFormChangeMode);
-        lock_and_load('url', toggleBookmarkForm); // (true) true
-        lock_and_load('toggle_edit_form', closeEditBookmarkForm);
+        lock_and_load('url', app.toggleBookmarkForm);
+        lock_and_load('toggle_edit_form', app.closeForm);
 
         // class click
         lock_and_klass('bookmark-edit', openEditBookmarkForm);
         lock_and_klass('bookmark-delete', deleteBookmark);
         lock_and_klass('clickable', getBookmarksForTag);
 
-        lock_and_load('load-more-button', loadMore); // (1)
+        // forms
+        lock_and_submit('access-form', submitAccessForm);
+        lock_and_submit('bookmark-add', submitNewBookmark);
+        lock_and_submit('search-form', app.searchBookmarks);
+
+        lock_and_load('load-more-button', loadMore);
     }
 
     window.addEventListener('load', theLockAndLoad(), false);
