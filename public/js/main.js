@@ -392,6 +392,7 @@
             closeEditBookmarkForm(form);
             var viewportOffset = currBk.getBoundingClientRect();
             window.scrollTo(0, viewportOffset.top);
+            theLockAndLoad();
         }
     }
 
