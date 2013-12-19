@@ -448,19 +448,33 @@
     window.onresize = heightCallback;
 
 		var App = function(payload) {
+			var i,
+			bookmark,
+			currentSearch,
+			currentTags,
+			currentPage;
+
 			this.getFormValues();
+
+			for (i = 0; i < payload.length; i++) {
+				bookmark = new Bookmark(payload[i].uuid, payload[i].title, payload[i].url, payload[i].tags, payload[i].date);
+				Bookmarks.push(bookmark);
+			}
 		};
 
-		App.prototype.renderBookmarks = function () {
+		App.prototype.renderBookmarks = function (tags, search, page, start, finish) {
 			var i,
 			bookmark;
 
 			document.getElementById('list-bookmarks').innerHTML = "";
 
-			for (i = 0; i < payload.length; i++) {
-				bookmark = new Bookmark(payload[i].uuid, payload[i].title, payload[i].url, payload[i].tags, payload[i].date);
-				Bookmarks.push(bookmark);
-			  document.getElementById('list-bookmarks').innerHTML += bookmark.render();
+			if (Bookmarks.length < 1) {
+				document.getElementById('list-bookmarks').innerHTML = '<article class="empty"><h3><span class="ion-ios7-glasses-outline"></span></h3><p>There aren\'t any bookmarks yet.</p></article>';
+				return;
+			}
+
+			for (i = 0; i < Bookmarks.length; i++) {
+			  document.getElementById('list-bookmarks').innerHTML += Bookmarks[i].render();
 			}
 		};
 
@@ -565,8 +579,6 @@
     }
 
     App.prototype.escapeHTMLEntities = function (str) {
-				return "";
-/*
         return str.replace(/[&<>]/g, function(entity) {
             return {
                 '&': '&amp;',
@@ -574,9 +586,85 @@
                 '>': '&gt;'
             } || entity;
         });
-*/
     }
 
+    App.prototype.showAlert = function (msg, htmlClass) {
+        var alert = document.getElementById('alert');
+        alert.className = htmlClass;
+        alert.innerHTML = msg;
+        alert.style.display = 'block';
+
+        window.setTimeout(function() {
+            alert.style.display = 'none';
+        }, 2000);
+    }
+
+    App.prototype.searchBookmarks = function () {
+        var form = document.getElementById('bookmark-add'),
+            token = form.csrf_token.value,
+            list = document.getElementById('list-bookmarks'),
+            query = document.getElementById('search-form').search_query.value;
+
+        app.AJAXRequest( 'POST', '/search/0', 'query=' + query, function(response) { searchBookmarksResponse(response, list, query); }, token );
+
+        return false;
+    }
+
+		App.prototype.openForm = function () {
+		};
+
+		var app = new App(payload);
+
+		app.getFormValues();
+		app.renderBookmarks();
+
+    function lock_and_load(element, func) {
+        if (null !== document.getElementById(element)) {
+            document.getElementById(element).onclick = func;
+        }
+    }
+
+    function lock_and_submit(element, func) {
+        if (null !== document.getElementById(element)) {
+            document.getElementById(element).onsubmit = func;
+        }
+    }
+
+    function lock_and_klass(klass, func) {
+        var nodes = document.getElementsByClassName(klass),
+				i;
+
+        if (typeof nodes !== 'undefined' && nodes.length > 0) {
+            for (i = 0; i < nodes.length; ++i) {
+                nodes[i].onclick = func;
+            }
+        }
+    }
+
+    function theLockAndLoad() {
+        // click
+        //// lock_and_load('browseALL', browseAll);
+        lock_and_load('no-account', accessFormChangeMode);
+        lock_and_load('url', app.toggleBookmarkForm);
+        lock_and_load('toggle_edit_form', app.closeForm);
+
+        // class click
+        lock_and_klass('bookmark-edit', app.openForm);
+        lock_and_klass('bookmark-delete', deleteBookmark);
+        lock_and_klass('clickable', getBookmarksForTag);
+
+        // forms
+        lock_and_submit('access-form', submitAccessForm);
+        lock_and_submit('bookmark-add', submitNewBookmark);
+        lock_and_submit('search-form', app.searchBookmarks);
+
+        //// lock_and_load('load-more-button', loadMore);
+    }
+
+    window.addEventListener('load', theLockAndLoad(), false);
+
+		/* ==== LEGACY ==== */
+		
     function accessFormChangeMode() {
         var submit = document.getElementById('submit-button'),
             modeChanger = document.getElementById('no-account'),
@@ -631,189 +719,4 @@
 
         return false;
     }
-
-    App.prototype.showAlert = function (msg, htmlClass) {
-        var alert = document.getElementById('alert');
-        alert.className = htmlClass;
-        alert.innerHTML = msg;
-        alert.style.display = 'block';
-
-        window.setTimeout(function() {
-            alert.style.display = 'none';
-        }, 2000);
-    }
-
-    App.prototype.searchBookmarks = function () {
-        var form = document.getElementById('bookmark-add'),
-            token = form.csrf_token.value,
-            list = document.getElementById('list-bookmarks'),
-            query = document.getElementById('search-form').search_query.value;
-
-        app.AJAXRequest( 'POST', '/search/0', 'query=' + query, function(response) { searchBookmarksResponse(response, list, query); }, token );
-
-        return false;
-    }
-
-    function browseAllResponse(response, list) {
-        var i = 0,
-            data;
-
-        if (response.error) {
-            app.showAlert(response.message, 'error');
-        } else {
-            data = response.data;
-            if (list.className.indexOf('searching_') !== -1) {
-                document.getElementById('search_query').value = '';
-            }
-            list.className = '';
-            if (data.length > 0) {
-                list.innerHTML = '';
-
-                for (i = 0; i < data.length; i++) {
-                    list.innerHTML += renderBookmark(data[i].id,
-                        data[i].Title,
-                        data[i].Url,
-                        data[i].Tags.join(', '),
-                        data[i].Date,
-                        true);
-                }
-
-                document.getElementById('back-index').className = 'hidden';
-
-                if (data.length == 50) {
-                    document.getElementById('load-more').onclick = function() {
-                        loadMore(1);
-                        return false;
-                    };
-                } else {
-                    document.getElementById('load-more').style.display = 'none';
-                }
-            } else {
-                app.showAlert('There are no bookmarks to display.', 'info')
-            }
-            theLockAndLoad();
-        }
-    }
-
-    function browseAll() {
-        var form = document.getElementById('bookmark-add'),
-            token = form.csrf_token.value,
-            list = document.getElementById('list-bookmarks');
-
-        app.AJAXRequest('GET', '/bookmarks/0', '', function(response) {
-            browseAllResponse(response, list);
-        }, token);
-    }
-
-    function loadMoreResponse(response, list) {
-        var i = 0;
-        if (response.error) {
-            app.showAlert(response.message, 'error');
-        } else {
-            data = response.data;
-            if (data.length > 0) {
-                for (i = 0; i < data.length; i++) {
-                    list.innerHTML += renderBookmark(data[i].id,
-                        data[i].Title,
-                        data[i].Url,
-                        data[i].Tags.join(', '),
-                        data[i].Date,
-                        true);
-                }
-
-                if (data.length == 50) {
-                    document.getElementById('load-more').onclick = function() {
-                        loadMore(page + 1);
-                        return false;
-                    };
-                } else {
-                    document.getElementById('load-more').style.display = 'none';
-                }
-            } else {
-                app.showAlert('There are no bookmarks to display.', 'info')
-            }
-        }
-
-    }
-
-    function loadMore(page) {
-        var form = document.getElementById('bookmark-add'),
-            token = form.csrf_token.value,
-            list = document.getElementById('list-bookmarks'),
-            method,
-            queryData,
-            requestUrl,
-            i = 0;
-
-        if (list.className.indexOf('browsing_tag_') !== -1) {
-            method = 'GET';
-            requestUrl = '/tag/' + list.className.substring(list.className.indexOf('tag_') + 4) + '/' + page;
-            queryData = '';
-        } else if (list.className.indexOf('searching_') !== -1) {
-            method = 'POST';
-            requestUrl = '/search/' + page;
-            queryData = 'query=' + atob(list.className.substring(list.className.indexOf('_') + 1));
-        } else {
-            method = 'GET';
-            requestUrl = '/bookmarks/' + page;
-            queryData = '';
-        }
-
-        app.AJAXRequest(method, requestUrl, queryData, function(response) {
-            loadMoreResponse(response, list);
-        }, token);
-    }
-
-		App.prototype.openForm = function () {
-		};
-
-		var app = new App(payload);
-
-		app.getFormValues();
-		app.renderBookmarks();
-
-    function lock_and_load(element, func) {
-        if (null !== document.getElementById(element)) {
-            document.getElementById(element).onclick = func;
-        }
-    }
-
-    function lock_and_submit(element, func) {
-        if (null !== document.getElementById(element)) {
-            document.getElementById(element).onsubmit = func;
-        }
-    }
-
-    function lock_and_klass(klass, func) {
-        var nodes = document.getElementsByClassName(klass),
-				i;
-
-        if (typeof nodes !== 'undefined' && nodes.length > 0) {
-            for (i = 0; i < nodes.length; ++i) {
-                nodes[i].onclick = func;
-            }
-        }
-    }
-
-    function theLockAndLoad() {
-        // click
-        lock_and_load('browseALL', browseAll);
-        lock_and_load('no-account', accessFormChangeMode);
-        lock_and_load('url', app.toggleBookmarkForm);
-        lock_and_load('toggle_edit_form', app.closeForm);
-
-        // class click
-        // lock_and_klass('bookmark-edit', openEditBookmarkForm);
-        lock_and_klass('bookmark-delete', deleteBookmark);
-        lock_and_klass('clickable', getBookmarksForTag);
-
-        // forms
-        lock_and_submit('access-form', submitAccessForm);
-        lock_and_submit('bookmark-add', submitNewBookmark);
-        lock_and_submit('search-form', app.searchBookmarks);
-
-        lock_and_load('load-more-button', loadMore);
-    }
-
-    window.addEventListener('load', theLockAndLoad(), false);
 }());
