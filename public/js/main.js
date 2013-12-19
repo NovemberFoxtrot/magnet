@@ -111,6 +111,7 @@
 		/* ==== BOOKMARK ==== */
 
 		var Bookmark = function (uuid, title, url, tags, date) {
+                // bookmarkHtml += '<span class="bookmark-tag">' + this.tags[i].trim().toLowerCase() + '</span>';
 			this.uuid = uuid;
       this.title = title;
       this.url = url;
@@ -196,7 +197,8 @@
     }
 
     Bookmark.prototype.render = function() {
-				var i = 0;
+				var i = 0,
+				bookmarkHtml;
 
         if (this.date === undefined) {
             this.date = 'Just now';
@@ -216,7 +218,6 @@
             bookmarkHtml += '<span class="bookmark-tag">No tags</span>';
         } else {
             for (i = 0; i < this.tags.length; ++i) {
-                // bookmarkHtml += '<span class="bookmark-tag">' + this.tags[i].trim().toLowerCase() + '</span>';
                 bookmarkHtml += '<span class="bookmark-tag">' + this.tags[i] + '</span>';
             }
         }
@@ -447,15 +448,20 @@
     window.onresize = heightCallback;
 
 		var App = function(payload) {
-			var i;
-
 			this.getFormValues();
+		};
+
+		App.prototype.renderBookmarks = function () {
+			var i,
+			bookmark;
+
+			document.getElementById('list-bookmarks').innerHTML = "";
 
 			for (i = 0; i < payload.length; i++) {
-				Bookmarks.push(new Bookmark(payload[i].uuid, payload[i].title, payload[i].url, payload[i].tags, payload[i].date));
+				bookmark = new Bookmark(payload[i].uuid, payload[i].title, payload[i].url, payload[i].tags, payload[i].date);
+				Bookmarks.push(bookmark);
+			  document.getElementById('list-bookmarks').innerHTML += bookmark.render();
 			}
-
-			console.log(Bookmarks);
 		};
 
 		App.prototype.getFormValues = function () {
@@ -764,8 +770,7 @@
 		var app = new App(payload);
 
 		app.getFormValues();
-
-
+		app.renderBookmarks();
 
     function lock_and_load(element, func) {
         if (null !== document.getElementById(element)) {
@@ -798,7 +803,7 @@
         lock_and_load('toggle_edit_form', app.closeForm);
 
         // class click
-        lock_and_klass('bookmark-edit', openEditBookmarkForm);
+        // lock_and_klass('bookmark-edit', openEditBookmarkForm);
         lock_and_klass('bookmark-delete', deleteBookmark);
         lock_and_klass('clickable', getBookmarksForTag);
 

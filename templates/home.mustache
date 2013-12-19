@@ -24,28 +24,6 @@
         </form>
     </div>
     <section id="list-bookmarks">
-        {{#bookmarks}}
-        <article id="bookmark_{{ID}}">
-            <div class="bookmark-actions">
-                <a href="#" class="bookmark-edit"><span class="ion-levels"></span></a>
-                <a href="#" class="bookmark-delete"><span class="ion-trash-b"></span></a>
-            </div>
-            <h3><a href="{{URL}}" target="_blank">{{Title}}</a></h3>
-            <div class="bookmark-url"><span class="ion-link bookmark-icon"></span> {{URL}}</div>
-            <div class="bookmark-date"><span class="ion-clock bookmark-icon"></span> {{Date}}</div>
-            <div class="bookmark-tags">
-                <span class="ion-ios7-pricetag bookmark-icon"></span>
-                {{#Tags}}
-                <span class="bookmark-tag">{{.}}</span>
-                {{/Tags}}
-            </div>
-        </article>
-        {{/bookmarks}} {{^bookmarks}}
-        <article class="empty">
-            <h3><span class="ion-ios7-glasses-outline"></span></h3>
-            <p>There aren't any bookmarks yet.</p>
-        </article>
-        {{/bookmarks}}
     </section>
     {{#load_more}}
     <div id="load-more" {{^load_more}}class="hidden" {{/load_more}}>
