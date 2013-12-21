@@ -142,7 +142,6 @@
       this.form = document.getElementById('bookmark-add'),
       this.title = this.form.title.value,
       this.url = this.form.url.value,
-      this.tags = this.form.tags.value,
       this.token = this.form.csrf_token.value;
 		};
 
@@ -215,9 +214,7 @@
 
 			app.getFormValues();
 
-			tags = app.stringSplitTrim(app.tags);
-
-		  bookmark = new Bookmark(null, app.title, app.url, tags, null);
+		  bookmark = new Bookmark(null, app.title, app.url, null, null);
 
 			errors = bookmark.validate()
 				
@@ -228,11 +225,7 @@
 
       data += '&url=' + bookmark.url;
 
-			if (app.editMode === false) {
-				url = '/bookmark/new';
-			} else {
-				url = '/bookmark/update/' + bookmark.uuid;
-			}
+  		url = '/bookmark/new';
 
       app.AJAXRequest('POST', 
 											url, 
@@ -241,16 +234,7 @@
         								if (response.error) {
             							app.showAlert(response.message, 'error');
         								} else {
-													if (app.editMode === false) {
-													  bookmark.uuid = response.message;
-													  Bookmarks.unshift(bookmark);
-            							  app.showAlert('Bookmark added successfully.', 'success');
-														app.editMode = false;
-													} else {
-            							  app.showAlert('Bookmark updated successfully.', 'success');
-													}
-
-													app.closeForm();
+            							app.showAlert('Bookmark updated successfully.', 'success');
 													app.renderBookmarks();
 													resetEvents();
         								}
@@ -317,12 +301,12 @@
 
     function resetEvents() {
 			var events = [
-        ['no-account', accessFormChangeMode, 'onclick'],
-        ['url', app.toggleBookmarkForm, 'onclick'],
-        ['access-form', submitAccessForm, 'onsubmit'],
-        ['submit-add-bookmark', app.openForm, 'onclick'],
-        ['search-form', app.searchBookmarks, 'onsubmit'],
         // ['load-more-button', loadMore, 'onclick'],
+        ['access-form', submitAccessForm, 'onsubmit'],
+        ['bookmark-add', app.addBookmark, 'onsubmit'],
+        ['no-account', accessFormChangeMode, 'onclick'],
+        ['search-form', app.searchBookmarks, 'onsubmit'],
+        ['url', app.toggleBookmarkForm, 'onclick'],
 			],
 			i;
 
@@ -330,9 +314,9 @@
 				setEvent(events[i][0], events[i][1], events[i][2]);
 			}
 
-      setKlassEvent('bookmark-edit', app.editBookmark);
-      setKlassEvent('bookmark-delete', app.deleteBookmark);
       // setKlassEvent('clickable', getBookmarksForTag);
+      setKlassEvent('bookmark-delete', app.deleteBookmark);
+      setKlassEvent('bookmark-edit', app.editBookmark);
     }
 
     window.addEventListener('load', resetEvents(), false);

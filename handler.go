@@ -36,7 +36,6 @@ func Start(DB *Connection, config *Config) {
 	// Bookmark-related routes
 	m.Get("/bookmarks/:page", AuthRequired, GetBookmarksHandler)
 	m.Post("/bookmark/new", AuthRequired, NewBookmarkHandler)
-	m.Post("/bookmark/update/:bookmark", AuthRequired, EditBookmarkHandler)
 	m.Delete("/bookmark/delete/:bookmark", AuthRequired, DeleteBookmarkHandler)
 
 	// Search
@@ -137,38 +136,6 @@ func NewBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.C
 			JSONDataResponse(200, false, bookmark, req, w)
 		} else {
 			WriteJSONResponse(200, true, "Error inserting bookmark.", req, w)
-		}
-	}
-}
-
-// EditBookmarkHandler writes out response to editing a URL
-func EditBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.CookieStore, connection *Connection, params martini.Params) {
-	// We use a map instead of Bookmark because id would be ""
-	bookmark := make(map[string]interface{})
-	bookmark["Title"] = req.PostFormValue("title")
-	bookmark["Url"] = req.PostFormValue("url")
-
-	if !IsValidURL(bookmark["Url"].(string)) || len(bookmark["Title"].(string)) < 1 {
-		WriteJSONResponse(200, true, "The url is not valid or the title is empty.", req, w)
-	} else {
-		_, userID := GetUserData(cs, req)
-		if req.PostFormValue("tags") != "" {
-			bookmark["Tags"] = strings.Split(req.PostFormValue("tags"), ",")
-			for i, v := range bookmark["Tags"].([]string) {
-				bookmark["Tags"].([]string)[i] = strings.ToLower(strings.TrimSpace(v))
-			}
-		}
-
-		response, err := connection.EditBookmark(userID, params, bookmark)
-
-		if err != nil {
-			WriteJSONResponse(200, true, "Error deleting bookmark.", req, w)
-		} else {
-			if response.Updated > 0 || response.Unchanged > 0 || response.Replaced > 0 {
-				WriteJSONResponse(200, false, "Bookmark updated successfully.", req, w)
-			} else {
-				WriteJSONResponse(200, true, "Error updating bookmark.", req, w)
-			}
 		}
 	}
 }
