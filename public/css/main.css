@@ -392,7 +392,6 @@ article.empty p {
 #bookmark-add div.form-field input {
     display: inline-block;
     width: calc(100% - 60px);
-    margin-left: 20px;
     border: none;
     border-bottom: 2px solid #DDD;
     padding: 15px;
