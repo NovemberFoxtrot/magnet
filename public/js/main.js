@@ -333,6 +333,8 @@
 			currentTags,
 			currentPage;
 
+			this.editMode = false;
+
 			this.getFormValues();
 
 			for (i = 0; i < payload.length; i++) {
@@ -392,35 +394,14 @@
         app.form.old_tags.value = bookmark.tags;
         app.form.title.value = bookmark.title;
         app.form.url.value = bookmark.url;
-
-        app.form.bookmark_date.value = bookmark.date
+        app.form.bookmark_id.value = bookmark.uuid;
+        app.form.bookmark_date.value = bookmark.date;
 
         document.getElementById('toggle_edit_form').className = 'button-action';
 
+				app.editMode = true;
+
         window.scrollTo(0, 0);
-    }
-
-    App.prototype.editBookmarkz = function () {
-				console.log(this);
-/*
-				var bookmark = new Bookmark(title, url)
-				var errors = bookmark.validate();
-
-				if (errors.length > 0) {
-          app.showAlert(errorMessages.join(' '), 'error');
-          return;
-				}
-*/
-				// bookmark.sendUpdate();
-/*
-        data += 'title=' + title.value;
-        data += '&url=' + url.value;
-        data += '&tags=' + tags.value;
-
-        app.AJAXRequest('POST', '/bookmark/update/' + bookmarkId.value, data, function(response) {
-            editBookmarkResponse(response, oldTags, tags, data, bookmarkId, date, form);
-        }, token);
-*/
     }
 
 		App.prototype.closeForm = function () {
@@ -508,13 +489,31 @@
 			var bookmark,
 			errors,
 			data = "",
-			tags = [];
+			tags = [],
+			url = "",
+			bookmarkUUID,
+			i;
 
 			app.getFormValues();
 
 			tags = app.stringSplitTrim(app.tags);
 
-			bookmark = new Bookmark(null, app.title, app.url, tags, null);
+			if (app.editMode === true) {
+				bookmarkUUID = app.form.bookmark_id.value;
+
+				for (i = 0; i < Bookmarks.length; i++) {
+					if ( Bookmarks[i].uuid === bookmarkUUID) {
+						bookmark = Bookmarks[i];
+					} 
+				}
+
+			  bookmark.title = app.title;
+				bookmark.url = app.url;
+				bookmark.tags = tags;
+				bookmark.date = 'Just now';
+			} else {
+			  bookmark = new Bookmark(null, app.title, app.url, tags, null);
+			}
 
 			errors = bookmark.validate()
 				
@@ -527,16 +526,28 @@
       data += '&url=' + bookmark.url;
       data += '&tags=' + bookmark.tags;
 
+			if (app.editMode === false) {
+				url = '/bookmark/new';
+			} else {
+				url = '/bookmark/update/' + bookmark.uuid;
+			}
+
       app.AJAXRequest('POST', 
-											'/bookmark/new', 
+											url, 
 											data, 
 											function(response) {
         								if (response.error) {
             							app.showAlert(response.message, 'error');
         								} else {
-													bookmark.uuid = response.message;
-													Bookmarks.unshift(bookmark);
-            							app.showAlert('Bookmark added successfully.', 'success');
+													if (app.editMode === false) {
+													  bookmark.uuid = response.message;
+													  Bookmarks.unshift(bookmark);
+            							  app.showAlert('Bookmark added successfully.', 'success');
+														app.editMode = false;
+													} else {
+            							  app.showAlert('Bookmark updated successfully.', 'success');
+													}
+
 													app.closeForm();
 													app.renderBookmarks();
 													resetEvents();
