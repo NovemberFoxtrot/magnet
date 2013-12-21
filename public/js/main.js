@@ -8,96 +8,31 @@
 
 		/* ==== TAG ==== */
 
-		var Tag = function() {
+		var Tag = function(title, count) {
+			this.title = title;
+			this.count = count;
 		};
 
-    function getTagsFromBookmark(bookmarkElem) {
-        var tagElems = bookmarkElem.getElementsByClassName('bookmark-tag'),
-            tags = [],
-            tag,
-            i;
+		Tag.prototype.render = function () {
+			return '<li class="clickable">' + this.title + '<span class="tag-count">(' + this.count + ')</span></li>';
+		}
 
-        for (i = 0; i < tagElems.length; i++) {
-            tag = tagElems[i].innerHTML;
-            if (tag !== 'No tags') tags.push(tag);
-        }
+    function recountTags() {
+			var i,
+			j,
+			stats = {};
 
-        return tags.join(', ');
-    }
+			for (i = 0; i < Bookmarks.length; i++) {
+				for (j = 0; j < Bookmarks[i].tags.length; j++ ) {
+					if (typeof(stats[Bookmarks[i].tags[j]]) === "undefined") {
+						stats[Bookmarks[i].tags[j]] = 1;
+					} else {
+						stats[Bookmarks[i].tags[j]] += 1;
+					}
+				}
+			}
 
-    function appendTag(ulNode, tag, tagCount) {
-        if (tagCount === undefined) tagCount = 1;
-        ulNode.innerHTML += '<li class="clickable">' + tag + ' <span class="tag-count">(' + tagCount + ')</span></li>';
-    }
-
-    function updateTags(tags, deleteTags) {
-        var tagArray,
-            ulNode,
-            tagList,
-            newTags,
-            i,
-            tag,
-            tagCount;
-
-        if (tags.trim() !== '') {
-            tagArray = tagsToArray(tags);
-
-            if (deleteTags === undefined) deleteTags = false;
-
-            ulNode = document.getElementById('tags').
-            getElementsByTagName('ul')[0];
-            tagList = ulNode.getElementsByTagName('li');
-
-            // If there is only one element and it's not clickable it means
-            // that this element is the No tags placeholder.
-            if (tagList.length === 1 && tagList[0].className !== 'clickable' && !deleteTags) {
-                tagList[0].style.display = 'none';
-
-                for (i in tagArray) {
-                    appendTag(ulNode, tagArray[i]);
-                }
-
-            } else {
-                newTags = [];
-
-                for (i = 0; i < tagList.length; i++) {
-                    tag = tagList[i].innerHTML.split(' <span class="tag-count">')[0];
-                    tagCount = Number(tagList[i].innerHTML.split('(')[1].split(')')[0]);
-
-                    if (tagArray.indexOf(tag) !== -1) {
-                        tagCount += (deleteTags ? -1 : 1);
-                        tagArray[tagArray.indexOf(tag)] = null;
-                    }
-
-                    if (tagCount > 0) {
-                        newTags.push([tag, tagCount]);
-                    }
-                }
-
-                ulNode.innerHTML = '';
-
-                for (i in newTags) {
-                    appendTag(ulNode, newTags[i][0], newTags[i][1]);
-                }
-
-                if (!deleteTags) {
-                    for (i in tagArray) {
-                        if (tagArray[i] !== null) {
-                            appendTag(ulNode, tagArray[i]);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    function tagsToArray(tags) {
-        var tagArray = tags.split(',');
-        for (var i = 0; i < tagArray.length; i++) {
-            tagArray[i] = tagArray[i].trim().toLowerCase();
-        }
-
-        return tagArray;
+			return stats;
     }
 
 		/* ==== BOOKMARK ==== */
@@ -157,156 +92,6 @@
         bookmarkHtml += '</div></article>';
 
         return bookmarkHtml;
-    }
-
-
-    function editBookmarkResponse(response, oldTags, tags, data, bookmarkId, date, form) {
-        var oldTagsArray,
-            tagsArray,
-            tagsToAdd,
-            tagsToDelete,
-            currBk;
-
-        if (response.error) {
-            app.showAlert(response.message, 'error');
-        } else {
-            app.showAlert('Bookmark updated successfully.', 'success');
-            // Update tags
-            if (tags.value !== '') {
-                if (oldTags.value === '') {
-                    // Add the new tags
-                    updateTags(tags.value);
-                } else {
-                    // Remove those which where removed and 
-                    // add the new ones
-                    oldTagsArray = tagsToArray(oldTags.value);
-                    tagsArray = tagsToArray(tags.value);
-                    tagsToAdd = [];
-                    tagsToDelete = [];
-
-                    for (var i = 0; i < tagsArray.length; i++) {
-                        if (oldTagsArray.indexOf(tagsArray[i]) === -1) {
-                            tagsToAdd.push(tagsArray[i]);
-                        } else {
-                            oldTagsArray[oldTagsArray.indexOf(tagsArray[i])] = undefined;
-                        }
-                    }
-
-                    for (i = 0; i < oldTagsArray.length; i++) {
-                        if (oldTagsArray[i] !== undefined) {
-                            tagsToDelete.push(oldTagsArray[i]);
-                        }
-                    }
-
-                    updateTags(tagsToAdd.join(', '));
-                    updateTags(tagsToDelete.join(', '), true);
-                }
-            } else if (oldTags !== '') {
-                // Remove the tags
-                updateTags(oldTags.value, true);
-            }
-
-            currBk = document.getElementById('bookmark_' + bookmarkId.value);
-            currBk.innerHTML = renderBookmark(bookmarkId.value, title.value, url.value, tags.value, date.value);
-
-            app.closeForm();
-
-            var viewportOffset = currBk.getBoundingClientRect();
-
-            window.scrollTo(0, viewportOffset.top);
-
-            resetEvents();
-        }
-    }
-
-
-    function updateBookmarks(response, list, tag) {
-        var data,
-            i = 0;
-
-        if (response.error) {
-            app.showAlert(response.message, 'error');
-        } else {
-            data = response.data;
-            list.className = 'browsing_tag_' + tag;
-            if (data.length > 0) {
-                list.innerHTML = '';
-                for (i = 0; i < data.length; i++) {
-                    list.innerHTML += renderBookmark(data[i].id,
-                        data[i].Title,
-                        data[i].Url,
-                        data[i].Tags.join(', '),
-                        data[i].Date,
-                        true);
-                }
-
-                document.getElementById('back-index').className = '';
-
-                if (data.length == 50) {
-                    document.getElementById('load-more').onclick = function() {
-                        loadMore(1);
-                        return false;
-                    };
-                } else {
-                    if (null !== document.getElementById('load-more')) {
-                        document.getElementById('load-more').style.display = 'none';
-                    }
-                }
-            } else {
-                app.showAlert('There are no bookmarks for tag "' + tag + '"', 'info')
-            }
-            resetEvents();
-        }
-    }
-
-    function getBookmarksForTag() {
-        var form = document.getElementById('bookmark-add'),
-            token = form.csrf_token.value,
-            list = document.getElementById('list-bookmarks'),
-            i = 0,
-            tag = this.innerHTML.split(" ")[0];
-
-        app.AJAXRequest('GET', '/tag/' + tag + '/0', '', function(response) {
-            updateBookmarks(response, list, tag);
-        }, token);
-    }
-
-    function searchBookmarksResponse(response, list, query) {
-        var i = 0,
-            data;
-
-        if (response.error) {
-            app.showAlert(response.message, 'error');
-        } else {
-            data = response.data;
-            list.className = 'searching_' + btoa(query);
-            if (data.length > 0) {
-                list.innerHTML = '';
-                for (i = 0; i < data.length; i++) {
-                    list.innerHTML += renderBookmark(data[i].id,
-                        data[i].Title,
-                        data[i].Url,
-                        data[i].Tags.join(', '),
-                        data[i].Date,
-                        true);
-                }
-
-                document.getElementById('back-index').className = '';
-
-                if (data.length == 50) {
-                    document.getElementById('load-more').onclick = function() {
-                        loadMore(1);
-                        return false;
-                    };
-                } else {
-                    if (null !== document.getElementById('load-more')) {
-                        document.getElementById('load-more').style.display = 'none';
-                    }
-                }
-            } else {
-                app.showAlert('There are no bookmarks for "' + query + '"', 'info')
-            }
-        }
     }
 
 		/* ==== APP ==== */
@@ -370,6 +155,7 @@
     App.prototype.toggleBookmarkForm = function () {
 			app.form.title.parentNode.classList.toggle('hidden');
 			app.form.tags.parentNode.classList.toggle('hidden');
+		  // document.getElementById('toggle_edit_form').className.remove('button-action');
     };
 
     App.prototype.editBookmark = function () {
@@ -466,7 +252,7 @@
             list = document.getElementById('list-bookmarks'),
             query = document.getElementById('search-form').search_query.value;
 
-        app.AJAXRequest( 'POST', '/search/0', 'query=' + query, function(response) { searchBookmarksResponse(response, list, query); }, token );
+        app.AJAXRequest('POST', '/search/0', 'query=' + query, function(response) { searchBookmarksResponse(response, list, query); }, token);
 
         return false;
     }
@@ -476,10 +262,11 @@
 			temp,
 			result = [];
 
+			// replace multiple ,s with a singe , // remove , from beginning and end 
 			temp = string.replace(/(\,+)/g, ",").replace(/$\,|^\,/g, "").trim().split(",");
 
 			for (i = 0; i < temp.length; i++) {
-				result.push(temp[i].trim());
+				result.push(temp[i].trim().toLowerCase());
 			}
 
 			return result;
@@ -558,10 +345,20 @@
      return false;
     }
 
+		App.prototype.renderTags = function () {
+			var tagCounts = recountTags(),
+			i;
+
+			for (i = 0; i < tagCounts.length; i++) {
+				console.log(tagCounts[i]);
+			}
+		}
+
 		var app = new App(payload);
 
 		app.getFormValues();
 		app.renderBookmarks();
+		app.renderTags();
 
     App.prototype.deleteBookmark = function () {
         var elem = this.parentNode.parentNode,
@@ -610,7 +407,7 @@
         ['url', app.toggleBookmarkForm, 'onclick'],
         ['toggle_edit_form', app.closeForm, 'onclick'],
         ['access-form', submitAccessForm, 'onsubmit'],
-        ['bookmark-add', app.addBookmark, 'onsubmit'],
+        ['submit-add-bookmark', app.openForm, 'onclick'],
         ['search-form', app.searchBookmarks, 'onsubmit'],
         // ['load-more-button', loadMore, 'onclick'],
 			],
@@ -622,7 +419,7 @@
 
       setKlassEvent('bookmark-edit', app.editBookmark);
       setKlassEvent('bookmark-delete', app.deleteBookmark);
-      setKlassEvent('clickable', getBookmarksForTag);
+      // setKlassEvent('clickable', getBookmarksForTag);
     }
 
     window.addEventListener('load', resetEvents(), false);
