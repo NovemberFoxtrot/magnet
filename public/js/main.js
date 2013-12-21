@@ -274,13 +274,19 @@
                     } else {
                         app.showAlert('Bookmark deleted successfully.', 'success');
                         elem.style.display = 'none';
-                        updateTags(getTagsFromBookmark(elem), true);
+												app.renderTags();
                     }
                 },
                 document.getElementById('csrf_token').value
             );
         }
     }
+
+		App.prototype.listByTag = function () {
+			console.log(this);
+		}
+
+		/* ==== EVENTS ==== */
 
     function setEvent(element, func, prop) {
         if (null !== document.getElementById(element)) {
@@ -314,7 +320,7 @@
 				setEvent(events[i][0], events[i][1], events[i][2]);
 			}
 
-      // setKlassEvent('clickable', getBookmarksForTag);
+      setKlassEvent('clickable', app.listByTag);
       setKlassEvent('bookmark-delete', app.deleteBookmark);
       setKlassEvent('bookmark-edit', app.editBookmark);
     }

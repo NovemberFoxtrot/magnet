@@ -109,13 +109,6 @@ func NewBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.C
 	} else {
 		_, userID := GetUserData(cs, req)
 
-		if req.PostFormValue("tags") != "" {
-			bookmark["Tags"] = strings.Split(req.PostFormValue("tags"), ",")
-			for i, v := range bookmark["Tags"].([]string) {
-				bookmark["Tags"].([]string)[i] = strings.ToLower(strings.TrimSpace(v))
-			}
-		}
-
 		bookmark["Created"] = float64(time.Now().Unix())
 		bookmark["Date"] = time.Unix(int64(bookmark["Created"].(float64)), 0).Format("Jan 2, 2006 at 3:04pm")
 		bookmark["User"] = userID
@@ -127,7 +120,13 @@ func NewBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.C
 			right := strings.Index(str, "</title>")
 			bookmark["Title"] = str[left+len("<title>") : right]
 		} else {
-			bookmark["Title"] = bookmark["Url"] 
+			bookmark["Title"] = bookmark["Url"]
+		}
+
+		bookmark["Tags"] = strings.Split(bookmark["Title"].(string), " ")
+
+		for i, v := range bookmark["Tags"].([]string) {
+			bookmark["Tags"].([]string)[i] = strings.ToLower(strings.TrimSpace(v))
 		}
 
 		response, _ := connection.NewBookmark(userID, bookmark)
