@@ -50,14 +50,8 @@
 			}
 		};
 
-		var b = new Bookmark("Duude");
-
 		Bookmark.prototype.validate = function () {
 			var errors = [];
-
-      if (this.title.length < 1) {
-          errors.push('Title cannot be blank.');
-      }
 
       if (this.url.length < 5 || !(this.url.indexOf('http://') !== -1 || this.url.indexOf('https://') !== -1)) {
           errors.push('Invalid url.');
@@ -152,53 +146,6 @@
       this.token = this.form.csrf_token.value;
 		};
 
-    App.prototype.toggleBookmarkForm = function () {
-			app.form.title.parentNode.classList.toggle('hidden');
-			app.form.tags.parentNode.classList.toggle('hidden');
-		  // document.getElementById('toggle_edit_form').className.remove('button-action');
-    };
-
-    App.prototype.editBookmark = function () {
-        var uuidNode = this.parentNode.parentNode,
-						i = 0;
-
-        app.toggleBookmarkForm();
-
-				var bookmark;
-
-				var bookmarkUUID = uuidNode.id.substring(uuidNode.id.indexOf('_') + 1);
-
-				for (i = 0; i < Bookmarks.length; i++) {
-					if ( Bookmarks[i].uuid === bookmarkUUID) {
-						bookmark = Bookmarks[i];
-					} 
-				}
-
-        app.form.submit.value = 'Edit bookmark';
-        app.form.tags.value = bookmark.tags;
-        app.form.bookmark_id.value = bookmark.uuid
-        app.form.old_tags.value = bookmark.tags;
-        app.form.title.value = bookmark.title;
-        app.form.url.value = bookmark.url;
-        app.form.bookmark_id.value = bookmark.uuid;
-        app.form.bookmark_date.value = bookmark.date;
-
-        document.getElementById('toggle_edit_form').className = 'button-action';
-
-				app.editMode = true;
-
-        window.scrollTo(0, 0);
-    }
-
-		App.prototype.closeForm = function () {
-      this.form.submit.value = 'Add bookmark';
-      this.form.tags.value = '';
-      this.form.title.value = '';
-      this.form.url.value = '';
-
-			app.toggleBookmarkForm();
-		};
-
     App.prototype.AJAXRequest = function (method, url, data, callback, token) {
         var xhr = new XMLHttpRequest(),
             response;
@@ -257,21 +204,6 @@
         return false;
     }
 
-		App.prototype.stringSplitTrim = function (string) {
-			var i,
-			temp,
-			result = [];
-
-			// replace multiple ,s with a singe , // remove , from beginning and end 
-			temp = string.replace(/(\,+)/g, ",").replace(/$\,|^\,/g, "").trim().split(",");
-
-			for (i = 0; i < temp.length; i++) {
-				result.push(temp[i].trim().toLowerCase());
-			}
-
-			return result;
-		}
-
     App.prototype.addBookmark = function () {
 			var bookmark,
 			errors,
@@ -285,22 +217,7 @@
 
 			tags = app.stringSplitTrim(app.tags);
 
-			if (app.editMode === true) {
-				bookmarkUUID = app.form.bookmark_id.value;
-
-				for (i = 0; i < Bookmarks.length; i++) {
-					if ( Bookmarks[i].uuid === bookmarkUUID) {
-						bookmark = Bookmarks[i];
-					} 
-				}
-
-			  bookmark.title = app.title;
-				bookmark.url = app.url;
-				bookmark.tags = tags;
-				bookmark.date = 'Just now';
-			} else {
-			  bookmark = new Bookmark(null, app.title, app.url, tags, null);
-			}
+		  bookmark = new Bookmark(null, app.title, app.url, tags, null);
 
 			errors = bookmark.validate()
 				
@@ -309,9 +226,7 @@
           return false;
       }
 
-      data += 'title=' + bookmark.title;
       data += '&url=' + bookmark.url;
-      data += '&tags=' + bookmark.tags;
 
 			if (app.editMode === false) {
 				url = '/bookmark/new';
@@ -402,10 +317,8 @@
 
     function resetEvents() {
 			var events = [
-        // ['browseALL', browseAll, 'onclick'],
         ['no-account', accessFormChangeMode, 'onclick'],
         ['url', app.toggleBookmarkForm, 'onclick'],
-        ['toggle_edit_form', app.closeForm, 'onclick'],
         ['access-form', submitAccessForm, 'onsubmit'],
         ['submit-add-bookmark', app.openForm, 'onclick'],
         ['search-form', app.searchBookmarks, 'onsubmit'],
