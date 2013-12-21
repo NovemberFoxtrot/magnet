@@ -105,24 +105,36 @@ func NewBookmarkHandler(req *http.Request, w http.ResponseWriter, cs *sessions.C
 	bookmark["Title"] = req.PostFormValue("title")
 	bookmark["Url"] = req.PostFormValue("url")
 
-	if !IsValidURL(bookmark["Url"].(string)) || len(bookmark["Title"].(string)) < 1 {
-		WriteJSONResponse(200, true, "The url is not valid or the title is empty.", req, w)
+	if !IsValidURL(bookmark["Url"].(string)) {
+		WriteJSONResponse(200, true, "The url is not valid.", req, w)
 	} else {
 		_, userID := GetUserData(cs, req)
+
 		if req.PostFormValue("tags") != "" {
 			bookmark["Tags"] = strings.Split(req.PostFormValue("tags"), ",")
 			for i, v := range bookmark["Tags"].([]string) {
 				bookmark["Tags"].([]string)[i] = strings.ToLower(strings.TrimSpace(v))
 			}
 		}
+
 		bookmark["Created"] = float64(time.Now().Unix())
 		bookmark["Date"] = time.Unix(int64(bookmark["Created"].(float64)), 0).Format("Jan 2, 2006 at 3:04pm")
 		bookmark["User"] = userID
 
+		str := FetchUrl(bookmark["Url"].(string))
+
+		if strings.Contains(str, "<title>") {
+			left := strings.Index(str, "<title>")
+			right := strings.Index(str, "</title>")
+			bookmark["Title"] = str[left+len("<title>") : right]
+		} else {
+			bookmark["Title"] = bookmark["Url"] 
+		}
+
 		response, _ := connection.NewBookmark(userID, bookmark)
 
 		if response.Inserted > 0 {
-			WriteJSONResponse(200, false, response.GeneratedKeys[0], req, w)
+			JSONDataResponse(200, false, bookmark, req, w)
 		} else {
 			WriteJSONResponse(200, true, "Error inserting bookmark.", req, w)
 		}
